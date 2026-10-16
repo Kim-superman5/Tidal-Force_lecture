@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>05. 조석 – 인터랙티브 학습 자료</title>
+<style>
+:root{--bg:#f4f7fb;--ink:#14212e;--mut:#43556a;--pri:#0b4f8a;--pri2:#e6f0fa;--ok:#00704a;--okbg:#e0f5ec;--ng:#a8330a;--ngbg:#fdeadf;--line:#c5d1de;
+--cen:#0072B2;--gra:#D55E00;--tid:#7B2D8E;--moon:#0072B2;--sun:#B86E00;}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;height:100%;font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:18px;line-height:1.5;color:var(--ink);background:var(--bg);-webkit-text-size-adjust:100%;touch-action:manipulation}
+#app{height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+.slide{display:none;flex:1;min-height:0;flex-direction:column}
+.slide.active{display:flex}
+.s-head{padding:10px 20px 2px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.s-head .num{background:var(--pri);color:#fff;border-radius:50%;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.s-head h2{margin:0;font-size:26px}
+.s-head .lead{margin:0;color:var(--mut);flex-basis:100%;font-size:18px}
+.s-body{flex:1;min-height:0;overflow:auto;padding:8px 20px 14px}
+.stage{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,1fr);gap:14px;align-items:start}
+@media (max-width:900px),(max-aspect-ratio:5/4){.stage{grid-template-columns:1fr}}
+.panel{background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin:0}
+.panel+.panel{margin-top:12px}
+.panel h3{margin:0 0 8px;font-size:20px}
+svg.fig{width:100%;height:auto;max-height:calc(100vh - 215px);max-height:calc(100dvh - 215px);display:block}
+@media (min-width:700px) and (max-width:1100px){.s-head{padding:8px 14px 2px}.s-body{padding:8px 14px 12px}.s-head h2{font-size:24px}.stage{grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr);gap:10px}.panel{padding:10px 12px}}
+@media (max-width:900px),(max-aspect-ratio:5/4){.stage{grid-template-columns:minmax(0,1fr)}}
+svg text{font-family:inherit;font-size:20px;fill:#14212e}
+svg .halo{paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+svg [role=button]{cursor:pointer}
+svg [role=button]:focus-visible{outline:none}
+svg [role=button]:focus-visible .focus{stroke:#f0a000;stroke-width:5}
+.btn{font:inherit;font-weight:700;min-height:48px;min-width:48px;padding:8px 16px;border-radius:12px;border:2px solid var(--pri);background:#fff;color:var(--pri);cursor:pointer}
+.btn.pri,.btn[aria-pressed=true],.tab[aria-selected=true]{background:var(--pri);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,.card:focus-visible,.zone:focus-visible{outline:4px solid #f0a000;outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sw{display:inline-block;width:18px;height:18px;border-radius:4px;border:2px solid #14212e;vertical-align:middle;margin-right:6px}
+.srow{margin:8px 0}
+.srow label{display:flex;justify-content:space-between;font-weight:700}
+input[type=range]{width:100%;height:44px;background:transparent;-webkit-appearance:none;appearance:none;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:10px;background:#8da6bf;border-radius:6px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:var(--pri);border:3px solid #fff;box-shadow:0 0 0 2px var(--pri);margin-top:-12px}
+input[type=range]::-moz-range-track{height:10px;background:#8da6bf;border-radius:6px}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:var(--pri);border:3px solid #fff}
+.ro{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.ro b{text-align:right}
+.gauge{height:24px;border:2px solid var(--ink);border-radius:12px;background:#eef3f8;overflow:hidden}
+.gauge>i{display:block;height:100%;background:var(--pri);transition:width .15s}
+details.acc{border:2px solid var(--line);border-radius:12px;margin-top:10px;background:#fff}
+details.acc>summary{min-height:48px;display:flex;align-items:center;padding:6px 14px;font-weight:700;cursor:pointer;color:var(--pri)}
+details.acc>div{padding:4px 14px 12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px}
+.tab{font:inherit;font-weight:700;min-height:48px;padding:6px 16px;border:2px solid var(--pri);border-radius:12px;background:#fff;color:var(--pri);cursor:pointer}
+.opts{display:grid;gap:10px;margin:10px 0}
+.opt{display:flex;gap:12px;align-items:center;min-height:56px;padding:10px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;text-align:left;font:inherit;cursor:pointer;width:100%;color:var(--ink)}
+.opt .mk{font-weight:800;color:var(--pri)}
+.opt[aria-checked=true]{border-color:var(--pri);background:var(--pri2)}
+.opt.ok{border-color:var(--ok);background:var(--okbg)}
+.opt.ng{border-color:var(--ng);background:var(--ngbg)}
+.fb{margin-top:10px;border-radius:10px;font-weight:700}
+.fb:not(:empty){padding:10px 14px}
+.fb.ok{background:var(--okbg);border-left:8px solid var(--ok);color:#00402b}
+.fb.ng{background:var(--ngbg);border-left:8px solid var(--ng);color:#6e2105}
+.fb.info{background:var(--pri2);border-left:8px solid var(--pri);color:#0a2f52}
+.hint{margin-top:10px;padding:10px 14px;background:#fff8dc;border-left:8px solid #b58900;border-radius:10px;color:#4a3800}
+.qbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.qtext{font-size:22px;margin:8px 0}
+.qprog{display:flex;gap:6px;flex-wrap:wrap}
+.dot{display:inline-flex;width:40px;height:40px;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--line);font-weight:700;background:#fff}
+.dot.cur{border-color:var(--pri);background:var(--pri2)}
+.dot.ok{background:var(--okbg);border-color:var(--ok);color:var(--ok)}
+.dot.ng{background:var(--ngbg);border-color:var(--ng);color:var(--ng)}
+.txt{font:inherit;font-size:20px;min-height:48px;padding:6px 12px;border:2px solid #6c8198;border-radius:10px;width:100%;max-width:260px}
+textarea.txt{max-width:none;min-height:96px}
+.inrow{display:flex;gap:8px;align-items:center;margin:10px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;min-height:48px;padding:6px 16px;border:2px solid var(--pri);border-radius:24px;background:#fff;color:var(--pri);font-weight:700;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--pri);color:#fff}
+.chip[aria-pressed=true]::before{content:"✔ "}
+.formula{font-size:44px;font-weight:800;text-align:center;padding:6px;display:flex;justify-content:center;align-items:center;gap:12px}
+.frac{display:inline-flex;flex-direction:column;align-items:center;font-size:36px;line-height:1.1}
+.frac span:first-child{border-bottom:3px solid var(--ink);padding:0 10px}
+.bars .brow{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:8px;margin:6px 0}
+.bars .bt{height:26px;background:#eef3f8;border:2px solid var(--line);border-radius:8px;overflow:hidden;position:relative}
+.bars .bt i{display:block;height:100%;transition:width .2s}
+.zone{min-height:72px;border:3px dashed #6c8198;border-radius:14px;padding:6px;background:#f9fbfd}
+.zone.over{background:#fff7e0}
+.targets{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:10px 0}
+.zl{font-weight:800;color:var(--pri);margin-bottom:4px}
+.card{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:52px;min-width:52px;padding:6px 10px;margin:5px;border:2px solid var(--pri);border-radius:12px;background:#fff;font-weight:700;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;vertical-align:top;flex-direction:column}
+.card.sel{background:#fff3cf;border-color:#8a5a00;box-shadow:0 0 0 3px #f0a000}
+.card.ok{border-color:var(--ok);background:var(--okbg)}
+.card.ng{border-color:var(--ng);background:var(--ngbg)}
+.card.drag{position:relative;z-index:99;box-shadow:0 8px 20px rgba(0,0,0,.3);cursor:grabbing}
+.card svg{width:180px;height:auto;display:block}
+.card svg text{font-size:12px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th,.tbl td{border:2px solid var(--line);padding:6px 8px;text-align:center}
+select.sel{font:inherit;min-height:44px;padding:4px 8px;border:2px solid #6c8198;border-radius:8px;background:#fff}
+.cover-body{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:center;max-width:900px;margin:0 auto}.cover-body>div:first-child{max-width:760px}.cover-body>div:last-child{max-width:760px}
+@media (max-width:900px),(max-aspect-ratio:5/4){.cover-body{grid-template-columns:minmax(0,1fr);gap:12px}.cover h1{font-size:clamp(38px,8vw,56px)}.cover h1 .big{font-size:clamp(56px,12vw,78px)}}
+.unit{font-weight:800;color:var(--pri);margin:0}
+.cover h1{font-size:56px;line-height:1.1;margin:4px 0 6px}
+.cover h1 .big{color:var(--pri);font-size:78px}
+.think{font-size:21px;font-weight:700;background:#fff8dc;border-left:8px solid #b58900;padding:10px 14px;border-radius:10px;margin:8px 0}
+ul.plain{margin:0;padding-left:22px}
+#nav{display:flex;align-items:center;gap:10px;padding:8px 14px;border-top:2px solid var(--line);background:#fff;justify-content:flex-start}
+.navbtn{font:inherit;font-size:24px;width:68px;height:52px;border-radius:12px;border:2px solid var(--pri);background:#fff;color:var(--pri);cursor:pointer;font-weight:800}
+.navbtn.pri{background:var(--pri);color:#fff}
+.navbtn:disabled{opacity:.35;cursor:not-allowed}
+#pos{font-weight:800;min-width:64px;text-align:center}
+#jump{font:inherit;min-height:48px;max-width:46vw;border:2px solid var(--line);border-radius:10px;padding:4px 8px;background:#fff}
+.small{font-size:18px;color:var(--mut)}
+.overlay-host{position:relative}.figure-play{position:absolute;z-index:2;top:14px;left:14px;box-shadow:0 3px 12px rgba(15,37,54,.18)}.s7-task{margin:0 auto 10px;max-width:680px;padding:12px 18px;border:3px solid #a65b00;border-radius:14px;background:#fff2c7;color:#553000;text-align:center;font-size:25px;font-weight:850;line-height:1.3;box-shadow:0 3px 12px rgba(15,37,54,.12)}.challenge-tag{margin:6px 0 10px;color:#064b3d;background:#e0f5ec}.s-head .lead{text-align:left}
+@media(max-width:700px){.figure-play{top:8px;left:8px}.s7-task{font-size:21px;padding:10px 12px}}
+.tag{display:inline-block;padding:2px 10px;border-radius:14px;font-weight:700;border:2px solid currentColor}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app">
+
+<!-- 1 표지 -->
+<section class="slide cover" id="s1" data-title="표지 · 소개" aria-label="표지와 소개">
+ <div class="s-body">
+  <div class="cover-body">
+   <div>
+    <p class="unit">Ⅱ. 해수의 운동</p>
+    <h1><span class="big">05</span> 조석</h1>
+    <p class="small" style="margin:0 0 18px">고등학교 지구시스템과학 · 인터랙티브 학습 자료</p>
+    <article class="panel"><h3>학습 목표</h3>
+     <ul class="plain"><li>조석이 발생하는 과정을 설명할 수 있다.</li><li>자료를 해석하여 여러 지역의 조석 양상을 추리할 수 있다.</li></ul></article>
+    <div class="row" style="margin-top:18px"><button class="btn pri" id="startBtn">학습 시작 ▶</button><span class="small">아래 ◀ ▶ 버튼으로 페이지를 이동할 수 있어요.</span></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- 2 도입 -->
+<section class="slide" id="s2" data-title="도입: 해수면은 어떻게 변할까?" aria-label="도입">
+ <header class="s-head"><span class="num">2</span><h2>태양·달의 위치를 바꿔 보자</h2><p class="lead">슬라이더를 움직여 지구 해수면의 높낮이가 어떻게 달라지는지 살펴보세요.</p></header>
+ <div class="s-body"><div class="stage">
+  <figure class="panel overlay-host" style="margin:0"><button class="btn pri figure-play" id="s2play" aria-pressed="false">▶ 달 공전 재생</button><svg id="s2svg" class="fig" viewBox="0 0 760 560" role="img" aria-label="태양, 달, 지구 시스템과 해수면 모양"></svg>
+   <figcaption class="small">※ 해수면 높이 차는 이해를 돕기 위해 과장해 그린 그림입니다.</figcaption></figure>
+  <div>
+   <article class="panel"><h3>위치 조절</h3>
+    <div class="srow"><label for="s2m"><span>🌙 달의 위치</span><span id="s2mv"></span></label><input type="range" id="s2m" min="0" max="360" step="1" value="60"></div>
+    <div class="srow"><label for="s2s"><span>☀️ 태양의 위치</span><span id="s2sv"></span></label><input type="range" id="s2s" min="0" max="360" step="1" value="0"></div>
+    <div class="srow"><label for="s2o"><span>📍 관측 지점 (지구 자전)</span><span id="s2ov"></span></label><input type="range" id="s2o" min="0" max="360" step="1" value="90"></div>
+    <div class="row"><button class="btn" id="s2p1">달·태양 같은 쪽</button><button class="btn" id="s2p2">반대쪽</button><button class="btn" id="s2p3">직각</button></div>
+   </article>
+   <article class="panel"><h3>관측 지점의 해수면 변화</h3><svg id="s2tide" class="fig" viewBox="0 0 520 300" role="img" aria-label="해안의 만조선, 간조선, 현재 해수면 위치"></svg>
+    <div class="ro"><span>현재</span><b id="s2h"></b></div><div class="ro"><span>현재 높이</span><b id="s2level"></b></div><div class="ro"><span>만조와 간조의 차</span><b id="s2a"></b></div><div class="small">해안 단면의 선이 움직이며 관측 지점의 높이와 조차를 함께 보여 줍니다.</div>
+   </article>
+   <details class="acc"><summary>🔎 먼저 예상해 보기</summary><div id="s2q"></div></details>
+  </div>
+ </div></div>
+</section>
+
+<!-- 3 기조력 -->
+<section class="slide" id="s3" data-title="기조력" aria-label="기조력">
+ <header class="s-head"><span class="num">3</span><h2>조석을 일으키는 힘, 기조력</h2><p class="lead">버튼으로 힘을 켜고 꺼 보며 기조력이 어떻게 만들어지는지 확인하세요. (그림 Ⅱ-24)</p></header>
+ <div class="s-body"><div class="stage">
+  <figure class="panel overlay-host" style="margin:0"><button class="btn pri figure-play" id="s3play" aria-pressed="false">▶ 공전 재생</button><svg id="s3svg" class="fig" viewBox="0 0 840 540" role="img" aria-label="지구와 달 사이에 작용하는 원심력, 달의 인력, 기조력 화살표"></svg></figure>
+  <div>
+   <article class="panel"><h3>힘 표시 켜기/끄기</h3>
+    <div class="row" id="s3tg"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="s3step">▶ 하나씩 보기</button><button class="btn" id="s3all">모두 켜기</button></div>
+    <div class="fb info" id="s3msg" role="status" aria-live="polite"></div>
+   </article>
+   <article class="panel"><h3>지점을 골라 비교</h3>
+    <div class="row" id="s3pts"></div>
+    <div class="bars" id="s3bars" style="margin-top:8px"></div>
+    <div class="fb info" id="s3ptmsg" role="status" aria-live="polite"></div>
+   </article>
+  </div>
+ </div></div>
+</section>
+
+<!-- 4 질문 -->
+<section class="slide" id="s4" data-title="질문으로 개념 다지기" aria-label="질문">
+ <header class="s-head"><span class="num">4</span><h2>질문으로 생각해 보기</h2><p class="lead">앞 슬라이드의 그림을 떠올리며 답해 보세요.</p></header>
+ <div class="s-body"><div class="stage">
+  <figure class="panel" style="margin:0"><svg id="s4fig" class="fig" viewBox="0 0 400 260" role="img" aria-label="지구와 달 위의 지점 A, X, B"></svg></figure>
+  <article class="panel" id="q4"></article>
+ </div></div>
+</section>
+
+<!-- 5 공식 -->
+<section class="slide" id="s5" data-title="기조력의 크기" aria-label="기조력 공식">
+ <header class="s-head"><span class="num">5</span><h2>기조력의 크기: 태양 vs 달</h2><p class="lead">공식 T ∝ m / r³ 에 값을 넣어 두 천체의 기조력을 비교해 보세요.</p></header>
+ <div class="s-body"><div class="stage">
+  <article class="panel">
+   <div class="formula" role="img" aria-label="T 비례 m 나누기 r 세제곱">T ∝ <span class="frac"><span>m</span><span>r³</span></span></div>
+   <ul class="plain small"><li><b>T</b> 기조력 · <b>m</b> 천체의 질량 · <b>r</b> 지구 중심에서 천체까지의 거리</li></ul>
+   <div class="tabs" role="tablist" aria-label="활동 선택"><button class="tab" role="tab" id="s5t1" aria-selected="true">① 태양과 달 비교</button><button class="tab" role="tab" id="s5t2" aria-selected="false">② 거리가 변하면?</button></div>
+   <div id="s5p1">
+    <p style="margin:4px 0"><b>달을 기준(1)</b>으로 태양의 값을 넣어 보세요.</p>
+    <div class="row"><button class="btn" data-pre="0">달 (기준)</button><button class="btn" data-pre="1">① 질량만 반영</button><button class="btn" data-pre="2">② 거리만 반영</button><button class="btn pri" data-pre="3">③ 질량+거리 (태양)</button></div>
+    <div class="srow"><label for="s5m"><span>질량 m (달의 몇 배?)</span><span id="s5mv"></span></label><input type="range" id="s5m" min="0" max="7.5" step="0.001" value="0"></div>
+    <div class="srow"><label for="s5r"><span>거리 r (달까지 거리의 몇 배?)</span><span id="s5rv"></span></label><input type="range" id="s5r" min="1" max="400" step="1" value="1"></div>
+   </div>
+   <div id="s5p2" hidden>
+    <div class="srow"><label for="s5r2"><span>거리 r (처음 거리의 몇 배?)</span><span id="s5r2v"></span></label><input type="range" id="s5r2" min="1" max="4" step="0.1" value="1"></div>
+    <div id="s5q2"></div>
+   </div>
+  </article>
+  <div>
+   <article class="panel"><h3>기조력 T (달 = 1)</h3>
+    <div class="bars" id="s5bars"></div>
+    <div class="ro"><span>계산 값 m/r³</span><b id="s5val"></b></div>
+    <div class="fb info" id="s5msg" role="status" aria-live="polite"></div>
+   </article>
+   <article class="panel" id="s5q1box"><h3>확인</h3><div id="s5q1"></div></article>
+   <details class="acc"><summary>📖 교과서 자료 보기</summary><div>태양의 질량은 달의 약 2,800만 배, 태양~지구 거리는 지구~달 거리의 약 387배입니다. 태양의 기조력은 달 기조력의 약 1/2입니다.</div></details>
+  </div>
+ </div></div>
+</section>
+
+<!-- 6 만조·간조 -->
+<section class="slide" id="s6" data-title="만조와 간조" aria-label="만조와 간조">
+ <header class="s-head"><span class="num">6</span><h2>만조와 간조</h2><p class="lead">지구가 자전하면서 관측 지점에는 만조와 간조가 반복돼요.</p></header>
+ <div class="s-body"><div class="stage">
+  <figure class="panel" style="margin:0"><svg id="s6svg" class="fig" viewBox="0 0 760 520" role="img" aria-label="기울어진 자전축과 중위도 관측 지점, 달, 해수면을 함께 본 모습"></svg></figure>
+  <div>
+   <article class="panel"><h3>시각 조절</h3>
+    <div class="srow"><label for="s6t"><span>🕒 시각</span><span id="s6tv"></span></label><input type="range" id="s6t" min="0" max="1440" step="1" value="0"></div>
+    <div class="row"><button class="btn pri" id="s6play" aria-pressed="false">▶ 자동 재생</button></div>
+    <div class="ro"><span>이 섬의 해수면</span><b id="s6st"></b></div>
+   </article>
+   <article class="panel"><h3>섬으로 가는 길 (옆에서 본 모습)</h3>
+    <svg id="s6side" class="fig" viewBox="0 0 760 360" role="img" aria-label="해안과 섬을 잇는 바닷길이 간조에 드러나고 만조에 잠기는 모습" style="max-height:270px"></svg>
+   </article>
+   <details class="acc"><summary>✅ 확인하기</summary><div><div id="s6q1"></div><div id="s6q2" style="margin-top:12px"></div></div></details>
+  </div>
+ </div></div>
+</section>
+
+<!-- 7 그래프 -->
+<section class="slide" id="s7" data-title="조석 그래프 읽기" aria-label="조석 그래프">
+ <header class="s-head"><span class="num">7</span><h2>시간에 따른 해수면 높이 그래프</h2><p class="lead">만조는 가장 높은 지점, 간조는 가장 낮은 지점이에요.</p></header>
+ <div class="s-body"><div class="stage">
+  <figure class="panel" style="margin:0"><div id="s7task" class="s7-task" aria-live="polite"></div><svg id="s7svg" class="fig" viewBox="0 0 800 430" role="group" aria-label="평균 해수면 높이 변화 그래프. 점을 눌러 만조와 간조를 찾으세요"></svg></figure>
+  <div>
+   <article class="panel"><h3>그래프에서 찾기</h3>
+    <div class="qprog" id="s7prog" aria-label="진행 상황"></div>
+    <div class="fb" id="s7fb" role="status" aria-live="polite"></div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="s7hint">💡 힌트</button><button class="btn" id="s7all" aria-pressed="false">정답 모두 보기</button><button class="btn" id="s7reset">다시 하기</button></div>
+    <div class="hint" id="s7hinttext" hidden></div>
+   </article>
+   <article class="panel"><h3>시각 따라가 보기</h3>
+    <div class="srow"><label for="s7t"><span>🕒 시각</span><span id="s7tv"></span></label><input type="range" id="s7t" min="0" max="24" step="0.05" value="0"></div>
+    <div class="ro"><span>해수면</span><b id="s7st"></b></div>
+   </article>
+   <details class="acc"><summary>🤔 하루 동안 조차는 항상 같을까?</summary><div><div id="s7q"></div>
+     <p class="small" style="margin:8px 0 4px">그림 Ⅱ-26: 지구 자전축이 기울어져 있어요. 두 번의 만조 때 섬의 위치를 비교해 보세요.</p>
+     <div class="row"><button class="btn" id="s7tl0" aria-pressed="true">첫 번째 만조</button><button class="btn" id="s7tl1" aria-pressed="false">두 번째 만조</button></div>
+     <svg id="s7tilt" class="fig" viewBox="0 0 440 300" role="img" aria-label="지구 자전축이 기울어진 모습과 섬의 위치" style="max-height:260px"></svg>
+     <div class="fb info" id="s7tlmsg"></div></div></details>
+  </div>
+ </div></div>
+</section>
+
+<!-- 8 조석 유형 -->
+<section class="slide" id="s8" data-title="조석의 유형 분석·분류" aria-label="일주조 반일주조 혼합조">
+ <header class="s-head"><span class="num">8</span><h2>일주조 · 반일주조 · 혼합조</h2><p class="lead">만조·간조의 횟수와 높이(조차)를 비교하면 유형을 구분할 수 있어요. (그림 Ⅱ-27)</p></header>
+ <div class="s-body">
+  <div class="tabs" role="tablist" aria-label="활동 선택"><button class="tab" role="tab" id="s8t1" aria-selected="true">① 특징 분석하기</button><button class="tab" role="tab" id="s8t2" aria-selected="false">② 유형 분류하기</button></div>
+  <div id="s8p1"><div class="stage">
+   <figure class="panel" style="margin:0"><div class="tabs" id="s8types" role="tablist" aria-label="조석 유형"></div><svg id="s8svg" class="fig" viewBox="0 0 560 360" role="img" aria-label="조석 유형별 해수면 높이 그래프"></svg></figure>
+   <div>
+    <article class="panel"><h3>분석 도구</h3>
+     <button class="btn" id="s8mark" aria-pressed="false">만조·간조 표시 켜기</button>
+     <div class="ro"><span>하루 동안 만조 횟수</span><b id="s8cnt">?</b></div>
+     <div class="ro"><span>만조 높이(조차)</span><b id="s8cmp">?</b></div>
+     <div class="fb info" id="s8def" role="status" aria-live="polite"></div>
+    </article>
+    <article class="panel"><h3>특징 표 채우기</h3>
+     <table class="tbl"><thead><tr><th>유형</th><th>하루 만조 횟수</th><th>조차</th></tr></thead><tbody id="s8tb"></tbody></table>
+     <div class="row" style="margin-top:8px"><button class="btn pri" id="s8chk">정답 확인</button></div>
+     <div class="fb" id="s8tfb" role="status" aria-live="polite"></div>
+    </article>
+   </div></div></div>
+  <div id="s8p2" hidden><article class="panel"><h3>그래프 카드를 알맞은 유형 칸으로 옮겨 보세요 (끌어 놓기 또는 카드를 누른 뒤 칸을 누르기)</h3><div id="s8dnd"></div></article></div>
+ </div>
+</section>
+
+<!-- 9 세계지도 -->
+<section class="slide" id="s9" data-title="세계 지역의 조석 양상" aria-label="세계지도 조석 양상">
+ <header class="s-head"><span class="num">9</span><h2>어느 지역의 조석일까?</h2><p class="lead">지도의 ● 지점을 눌러 그 지역의 조석 그래프를 확인하세요. 세 가지 유형을 모두 찾아보세요.</p></header>
+ <div class="s-body"><div class="stage" style="grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr)">
+  <figure class="panel" style="margin:0"><svg id="s9map" class="fig" viewBox="0 0 875 300" role="group" aria-label="세계 지도. 지역 표시를 눌러 조석 그래프를 확인"></svg>
+   <figcaption class="small">※ 교과서 그림 Ⅱ-27을 참고해 단순화한 모식 지도입니다.</figcaption></figure>
+  <div>
+   <article class="panel"><h3 id="s9name">지역을 선택하세요</h3>
+    <svg id="s9g" class="fig" viewBox="0 0 440 280" role="img" aria-label="선택한 지역의 조석 그래프" style="max-height:260px"></svg>
+    <p class="tag challenge-tag">도전 모드 · 그래프만 보고 유형을 분류해 보세요</p>
+    <div id="s9ans"></div>
+    <div class="fb" id="s9fb" role="status" aria-live="polite"></div>
+   </article>
+   <article class="panel"><h3>찾은 유형</h3><div class="chips" id="s9found"></div><div id="s9why" style="margin-top:8px"></div></article>
+  </div>
+ </div></div>
+</section>
+
+<!-- 10 사리·조금: 천체 배치와 해안 단면 -->
+<section class="slide" id="s10" data-title="사리와 조금" aria-label="사리와 조금">
+ <header class="s-head"><span class="num">10</span><h2>사리(대조)와 조금(소조)</h2><p class="lead">달과 태양의 기조력이 더해지거나 서로 상쇄될 때 조차가 어떻게 달라지는지 살펴보세요.</p></header>
+ <div class="s-body"><div class="stage">
+  <figure class="panel overlay-host" style="margin:0"><button class="btn pri figure-play" id="s10play" aria-pressed="false">▶ 한 달 변화 재생</button><svg id="s10a" class="fig" viewBox="0 0 800 560" role="img" aria-label="달과 태양의 위치, 위상, 해수면 모양"></svg></figure>
+  <div>
+   <article class="panel"><h3>음력 날짜와 달의 위치</h3>
+    <div class="srow"><label for="s10d"><span>📅 음력 날짜</span><span id="s10dv"></span></label><input type="range" id="s10d" min="1" max="30" step="0.05" value="1"></div>
+    <div class="row"><button class="btn" data-d="1">삭</button><button class="btn" data-d="8">상현</button><button class="btn" data-d="16">망</button><button class="btn" data-d="23">하현</button></div>
+    <div class="legend" id="s10lg"></div><div class="ro"><span>이 날의 모양</span><b id="s10ph"></b></div>
+    <div class="fb info" id="s10msg" role="status" aria-live="polite"></div>
+   </article>
+   <article class="panel"><h3>조차를 해안에서 비교하기</h3><svg id="s10range" class="fig" viewBox="0 0 520 250" role="img" aria-label="만조와 간조 사이의 높이 차를 보여 주는 해안 단면"></svg><div class="ro"><span>달과 태양의 배치</span><b id="s10am"></b></div></article>
+   <details class="acc"><summary>✅ 확인하기</summary><div><div id="s10q1"></div><div id="s10q2" style="margin-top:12px"></div></div></details>
+  </div>
+ </div></div>
+</section>
+
+<!-- 11 월간 그래프 -->
+<section class="slide" id="s11" data-title="한 달 동안의 조차 변화" aria-label="한 달 동안의 조차 변화">
+ <header class="s-head"><span class="num">11</span><h2>한 달 동안 조차는 어떻게 달라질까?</h2><p class="lead">음력 날짜에 따라 조차가 커지고 작아지는 흐름을 그래프로 확인하세요.</p></header>
+ <div class="s-body"><div class="stage">
+  <figure class="panel" style="margin:0"><svg id="s10b" class="fig" viewBox="0 0 820 420" role="img" aria-label="한 달 동안 음력 날짜에 따른 해수면 높이 그래프"></svg></figure>
+  <div><article class="panel"><h3>날짜 따라가기</h3><p class="small">재생 중이 아닌 상태에서도 날짜를 움직여 그래프의 위치를 비교할 수 있어요.</p><div class="row"><button class="btn" id="s10prev">◀ 하루</button><button class="btn" id="s10next">하루 ▶</button></div><div class="fb info">삭·망 무렵에는 대조, 상현·하현 무렵에는 소조가 나타나요.</div><div class="row"><button class="btn" id="s10back">10페이지 천체 배치로 돌아가기</button></div></article></div>
+ </div></div>
+</section>
+
+<!-- 12 점검1 -->
+<section class="slide" id="s12" data-title="개념 점검 ① 퀴즈" aria-label="개념 점검 퀴즈">
+ <header class="s-head"><span class="num">12</span><h2>개념 점검 ① 퀴즈</h2><p class="lead">8문항 · 정답을 확인하며 진행해요.</p></header>
+ <div class="s-body"><article class="panel" id="q11"></article></div>
+</section>
+
+<!-- 13 점검2 -->
+<section class="slide" id="s13" data-title="개념 점검 ② 빈칸·서술" aria-label="개념 점검 빈칸 서술">
+ <header class="s-head"><span class="num">13</span><h2>개념 점검 ② 빈칸 · 서술</h2><p class="lead">직접 써서 확인해 보세요.</p></header>
+ <div class="s-body">
+  <div class="tabs" role="tablist" aria-label="활동 선택"><button class="tab" role="tab" id="s12t1" aria-selected="true">① 빈칸 채우기</button><button class="tab" role="tab" id="s12t2" aria-selected="false">② 확인 01</button><button class="tab" role="tab" id="s12t3" aria-selected="false">③ 바로 알기</button></div>
+  <article class="panel" id="s12p1"></article>
+  <article class="panel" id="s12p2" hidden></article>
+  <article class="panel" id="s12p3" hidden></article>
+ </div>
+</section>
+
+<!-- 14 점검3 -->
+<section class="slide" id="s14" data-title="개념 점검 ③ 끌어 놓기" aria-label="개념 점검 끌어 놓기">
+ <header class="s-head"><span class="num">14</span><h2>개념 점검 ③ 끌어 놓기</h2><p class="lead">달과 태양의 상대적 위치에 따라 대조와 소조를 구분해 보세요.</p></header>
+ <div class="s-body">
+  <article class="panel" id="s13p2"></article>
+ </div>
+</section>
+
+<!-- 15 정리 -->
+<section class="slide" id="s15" data-title="정리 · 자기 점검" aria-label="정리">
+ <header class="s-head"><span class="num">15</span><h2>정리와 자기 점검</h2><p class="lead">오늘 배운 내용을 돌아보세요.</p></header>
+ <div class="s-body"><div class="stage" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+  <article class="panel"><h3>📊 점검 결과</h3><div id="s14sc"></div></article>
+  <article class="panel"><h3>핵심 용어 — 눌러서 뜻을 확인하고 ✔ 해 보세요</h3><div id="s14terms"></div><div class="ro"><span>알고 있는 용어</span><b id="s14tc">0 / 7</b></div></article>
+  <article class="panel"><h3>🎯 학습 목표 점검</h3><div id="s14goals"></div><div class="row" style="margin-top:10px"><button class="btn pri" id="s14home">처음으로</button></div></article>
+ </div></div>
+</section>
+
+<nav id="nav" aria-label="슬라이드 이동">
+ <button id="prev" class="navbtn" aria-label="이전 슬라이드">◀</button>
+ <button id="next" class="navbtn pri" aria-label="다음 슬라이드">▶</button>
+ <span id="pos" aria-live="polite">1 / 14</span>
+ <select id="jump" aria-label="슬라이드 바로가기"></select>
+</nav>
+</main>
+
+<script>
+(()=>{'use strict';
+/* ================= 공통 도구 ================= */
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const rad=d=>d*Math.PI/180,f1=n=>n.toFixed(1),PI=Math.PI;
+const state={guess:'',sc:{},terms:{},goals:{}};
+const C={cen:'#0072B2',gra:'#D55E00',tid:'#7B2D8E',moon:'#0072B2',sun:'#C77700'};
+const hooks={};
+
+function arrow(x,y,dx,dy,col,w=4,dash='',head=13){
+ const L=Math.hypot(dx,dy);if(L<2)return'';
+ const ux=dx/L,uy=dy/L,ex=x+dx,ey=y+dy,bx=ex-ux*head,by=ey-uy*head;
+ return `<line x1="${f1(x)}" y1="${f1(y)}" x2="${f1(bx)}" y2="${f1(by)}" stroke="${col}" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:''} stroke-linecap="round"/><polygon points="${f1(ex)},${f1(ey)} ${f1(bx-uy*head*.55)},${f1(by+ux*head*.55)} ${f1(bx+uy*head*.55)},${f1(by-ux*head*.55)}" fill="${col}"/>`;
+}
+function waterPath(cx,cy,r0,terms,n=120){
+ let d='';for(let i=0;i<=n;i++){const th=i/n*2*PI;let r=r0;for(const t of terms)r+=t.k*Math.cos(2*(th-t.th));d+=(i?'L':'M')+f1(cx+r*Math.cos(th))+' '+f1(cy+r*Math.sin(th));}return d+'Z';
+}
+function mini(root,o){
+ root.innerHTML=`<p style="margin:0 0 4px;font-weight:700">${o.q}</p><div class="opts">${o.opts.map((t,k)=>`<button class="opt" data-k="${k}"><span class="mk">${'①②③④⑤'[k]}</span><span>${t}</span></button>`).join('')}</div>${o.hint?'<button class="btn hb">💡 힌트</button>':''}<div class="hint" hidden>${o.hint||''}</div><div class="fb" role="status" aria-live="polite"></div>`;
+ const fb=$('.fb',root);let done=false;
+ $$('.opt',root).forEach(b=>b.addEventListener('click',()=>{
+  if(done)return;const k=+b.dataset.k;
+  if(k===o.ans){b.classList.add('ok');done=true;fb.className='fb ok';fb.textContent='✔ 정답! '+(o.exp||'');o.onOk&&o.onOk();}
+  else{b.classList.add('ng');fb.className='fb ng';fb.textContent='✖ 오답이에요. 힌트를 보고 다시 골라 보세요.';}
+ }));
+ const hb=$('.hb',root);hb&&hb.addEventListener('click',()=>{const h=$('.hint',root);h.hidden=!h.hidden;});
+}
+/* 한 문제씩 푸는 퀴즈 */
+function Quiz(root,qs,cb={}){
+ let i=0;const res=Array(qs.length).fill(null);
+ const norm=s=>String(s).replace(/[\s,]/g,'').replace(/km|배|시간|분/gi,'');
+ function show(){
+  const q=qs[i];cb.onShow&&cb.onShow(q,i);let tries=0,locked=false,sel=-1;
+  const body=q.type==='input'?`<div class="inrow"><input id="qin" class="txt" type="text" inputmode="${q.mode||'text'}" autocomplete="off" aria-label="답 입력"><span>${q.unit||''}</span></div>`
+   :`<div class="opts" role="radiogroup" aria-label="보기">${q.opts.map((o,k)=>`<button class="opt" role="radio" aria-checked="false" data-k="${k}"><span class="mk">${'①②③④⑤'[k]}</span><span>${o}</span></button>`).join('')}</div>`;
+  root.innerHTML=`<div class="qprog" role="img" aria-label="${i+1}번 / 전체 ${qs.length}문항">${qs.map((_,k)=>`<span class="dot ${k===i?'cur':res[k]===true?'ok':res[k]===false?'ng':''}">${res[k]===true?'✔':res[k]===false?'✖':k+1}</span>`).join('')}</div>
+   <h3 class="qtext">${i+1}. ${q.q}</h3>${body}
+   <div class="qbtns"><button class="btn prevq" ${i===0?'disabled':''}>◀ 이전 문제</button><button class="btn hintb">💡 힌트</button><button class="btn pri checkb" ${q.type==='input'?'':'disabled'}>정답 확인</button><button class="btn pri nextb" hidden>${i<qs.length-1?'다음 문제 ▶':'결과 보기'}</button></div>
+   <div class="hint" hidden>${q.hint||''}</div><div class="fb" role="status" aria-live="polite"></div>`;
+  const fb=$('.fb',root),chk=$('.checkb',root),nx=$('.nextb',root),pq=$('.prevq',root);
+   pq.onclick=()=>{if(i>0){i--;show();}};
+  $('.hintb',root).onclick=()=>{const h=$('.hint',root);h.hidden=!h.hidden;};
+  $$('.opt',root).forEach(b=>b.onclick=()=>{if(locked)return;sel=+b.dataset.k;$$('.opt',root).forEach(x=>{x.setAttribute('aria-checked',x===b);});chk.disabled=false;});
+  const inp=$('#qin',root);inp&&inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk.click();});
+  chk.onclick=()=>{
+   if(locked)return;let ok;
+   if(q.type==='input')ok=q.ans.map(norm).includes(norm(inp.value));else ok=sel===q.ans;
+   tries++;
+   if(ok){locked=true;if(res[i]===null)res[i]=tries===1;fb.className='fb ok';fb.textContent='✔ 정답! '+(q.exp||'');
+    if(q.type!=='input')$$('.opt',root)[sel].classList.add('ok');chk.hidden=true;nx.hidden=false;nx.focus();}
+   else if(tries<2){fb.className='fb ng';fb.textContent='✖ 오답이에요. 💡 힌트를 보고 한 번 더 도전해 보세요.';if(q.type!=='input'){$$('.opt',root)[sel].classList.add('ng');}}
+   else{locked=true;if(res[i]===null)res[i]=false;const a=q.type==='input'?q.ans[0]:q.opts[q.ans];fb.className='fb ng';fb.textContent=`✖ 정답은 "${a}" 입니다. ${q.exp||''}`;
+    if(q.type!=='input')$$('.opt',root)[q.ans].classList.add('ok');chk.hidden=true;nx.hidden=false;}
+  };
+  nx.onclick=()=>{if(i<qs.length-1){i++;show();}else end();};
+ }
+ function end(){
+  const n=res.filter(Boolean).length;cb.onDone&&cb.onDone(n,qs.length);
+  root.innerHTML=`<h3 class="qtext">결과: ${n} / ${qs.length} 문항 (처음 시도 기준)</h3><div class="qprog">${res.map((r,k)=>`<span class="dot ${r?'ok':'ng'}">${r?'✔':'✖'}</span>`).join('')}</div>
+   <p>✖ 표시된 문항은 해당 슬라이드로 돌아가 다시 확인해 보세요.</p><div class="qbtns"><button class="btn pri redo">다시 풀기</button></div>`;
+  $('.redo',root).onclick=()=>{res.fill(null);i=0;show();};
+ }
+ show();
+}
+/* 끌어 놓기(+탭 선택) */
+function DnD(root,cfg){
+ root.innerHTML=`<div class="zone" data-zone="pool" tabindex="0" role="group" aria-label="카드 보관함"></div><div class="targets">${cfg.zones.map(z=>`<div class="zone target" data-zone="${z.id}" data-cap="${z.cap||99}" tabindex="0" role="group" aria-label="${z.label}"><div class="zl">${z.label}</div><div class="zc"></div></div>`).join('')}</div>
+  <div class="qbtns"><button class="btn pri chk">정답 확인</button><button class="btn rst">처음부터</button><button class="btn hnt">💡 힌트</button></div><div class="hint" hidden>${cfg.hint||''}</div><div class="fb" role="status" aria-live="polite"></div>`;
+ const pool=$('[data-zone=pool]',root),fb=$('.fb',root);let sel=null;
+ const cards=cfg.cards.map(c=>{const d=document.createElement('div');d.className='card';d.tabIndex=0;d.setAttribute('role','button');d.setAttribute('aria-pressed','false');d.dataset.id=c.id;d.innerHTML=c.html;if(c.label)d.setAttribute('aria-label',c.label);pool.appendChild(d);return d;});
+ const cont=z=>z.querySelector('.zc')||z;
+ function place(c,z){const k=cont(z),cap=+(z.dataset.cap||99);
+  if(z.dataset.zone!=='pool'&&k.children.length>=cap&&c.parentElement!==k){[...k.children].forEach(x=>pool.appendChild(x));}
+  k.appendChild(c);c.classList.remove('ok','ng');$$('.bd',c).forEach(x=>x.remove());}
+ function select(c){if(sel)sel.classList.remove('sel');if(sel===c){sel=null;c.setAttribute('aria-pressed','false');return;}sel=c;c.classList.add('sel');c.setAttribute('aria-pressed','true');}
+ function unsel(){if(sel){sel.classList.remove('sel');sel.setAttribute('aria-pressed','false');sel=null;}}
+ cards.forEach(c=>{let sx=0,sy=0,mv=false;
+  c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);sx=e.clientX;sy=e.clientY;mv=false;});
+  c.addEventListener('pointermove',e=>{if(!c.hasPointerCapture(e.pointerId))return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>10)mv=true;if(mv){c.classList.add('drag');c.style.transform=`translate(${dx}px,${dy}px)`;}});
+  c.addEventListener('pointerup',e=>{c.classList.remove('drag');c.style.transform='';
+   if(mv){const z=document.elementsFromPoint(e.clientX,e.clientY).map(x=>x.closest&&x.closest('.zone')).find(x=>x&&root.contains(x));if(z){place(c,z);unsel();}}
+   else select(c);});
+  c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(c);}});
+ });
+ $$('.zone',root).forEach(z=>{z.addEventListener('click',e=>{if(e.target.closest('.card'))return;if(sel){place(sel,z);unsel();}});
+  z.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel&&e.target===z){e.preventDefault();place(sel,z);unsel();}});});
+ $('.hnt',root).onclick=()=>{const h=$('.hint',root);h.hidden=!h.hidden;};
+ $('.rst',root).onclick=()=>{cards.forEach(c=>{pool.appendChild(c);c.classList.remove('ok','ng');$$('.bd',c).forEach(x=>x.remove());});unsel();fb.className='fb';fb.textContent='';};
+ $('.chk',root).onclick=()=>{
+  let n=0,un=0;cards.forEach(c=>{const z=c.closest('.zone');const id=z.dataset.zone;c.classList.remove('ok','ng');$$('.bd',c).forEach(x=>x.remove());
+   if(id==='pool'){un++;return;}const ok=id===cfg.answer[c.dataset.id];c.classList.add(ok?'ok':'ng');const b=document.createElement('span');b.className='bd';b.textContent=ok?'✔ 정답':'✖ 오답';c.appendChild(b);if(ok)n++;});
+  if(un){fb.className='fb ng';fb.textContent=`아직 옮기지 않은 카드가 ${un}장 있어요.`;return;}
+  fb.className='fb '+(n===cards.length?'ok':'ng');fb.textContent=n===cards.length?'✔ 모두 정답입니다!':`✖ ${n} / ${cards.length} 정답. ✖ 표시된 카드를 다시 옮겨 보세요. (💡 힌트)`;
+  cfg.onCheck&&cfg.onCheck(n,cards.length);};
+}
+function Tabs(ids,panels,onSel){ids.forEach((id,i)=>{$('#'+id).addEventListener('click',()=>{ids.forEach((x,k)=>{$('#'+x).setAttribute('aria-selected',k===i);panels[k].hidden=k!==i;});onSel&&onSel(i);});});}
+
+/* ================= 내비게이션 ================= */
+const slides=$$('.slide');let cur=0;const jump=$('#jump');
+jump.innerHTML=slides.map((s,i)=>`<option value="${i}">${i+1}. ${s.dataset.title}</option>`).join('');
+function go(n){const previous=cur;cur=Math.max(0,Math.min(slides.length-1,n));hooks.leave&&hooks.leave[previous]&&hooks.leave[previous](cur);slides.forEach((s,i)=>s.classList.toggle('active',i===cur));
+ $('#pos').textContent=`${cur+1} / ${slides.length}`;jump.value=cur;$('#prev').disabled=cur===0;$('#next').disabled=cur===slides.length-1;
+ const b=$('.s-body',slides[cur]);b&&(b.scrollTop=0);hooks[cur]&&hooks[cur]();}
+$('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);jump.onchange=()=>go(+jump.value);
+document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);});
+
+/* ================= 1. 표지 ================= */
+$('#startBtn').onclick=()=>go(1);
+
+/* ================= 2. 도입 ================= */
+(()=>{const svg=$('#s2svg'),tidal=$('#s2tide'),sm=$('#s2m'),ss=$('#s2s'),so=$('#s2o');const Am=1,As=.5;
+ function draw(){const m=+sm.value,s=+ss.value,o=+so.value,tm=rad(m),ts=rad(s),to=rad(o);
+  $('#s2mv').textContent=m+'°';$('#s2sv').textContent=s+'°';$('#s2ov').textContent=o+'°';
+  const cx=380,cy=280,mx=cx+175*Math.cos(tm),my=cy+175*Math.sin(tm),sx=cx+235*Math.cos(ts),sy=cy+235*Math.sin(ts);
+  const ro=108+20*Math.cos(2*(to-tm))+10*Math.cos(2*(to-ts)),ox=cx+ro*Math.cos(to),oy=cy+ro*Math.sin(to);
+  const hh=Am*Math.cos(2*(to-tm))+As*Math.cos(2*(to-ts));
+  const amp=Math.sqrt(Am*Am+As*As+2*Am*As*Math.cos(2*(tm-ts)));
+  const th=.5*Math.atan2(Am*Math.sin(2*tm)+As*Math.sin(2*ts),Am*Math.cos(2*tm)+As*Math.cos(2*ts));
+  const lr=108+20*amp*.85+26;
+  const tags=[th,th+PI].map(a=>`<text class="halo" x="${f1(cx+lr*Math.cos(a))}" y="${f1(cy+lr*Math.sin(a)+7)}" text-anchor="middle" font-weight="700">▲ 만조</text>`).join('')+[th+PI/2,th+3*PI/2].map(a=>`<text class="halo" x="${f1(cx+lr*.83*Math.cos(a))}" y="${f1(cy+lr*.83*Math.sin(a)+7)}" text-anchor="middle" style="fill:#43556a">▼ 간조</text>`).join('');
+     const highY=150-amp*44,lowY=150+amp*44,nowY=150-hh*44;
+   tidal.innerHTML=`<defs><linearGradient id="s2water" x2="0" y2="1"><stop stop-color="#70d4ee"/><stop offset="1" stop-color="#237dad"/></linearGradient></defs><rect width="520" height="300" rx="16" fill="#f2fbff"/><path d="M0 98 Q58 86 108 124 Q136 147 170 187 L170 300 H0Z" fill="#d5bf94" stroke="#92794f" stroke-width="3"/><path d="M28 103 Q58 86 92 111 Q111 94 132 126 Q147 131 170 187" fill="none" stroke="#53875a" stroke-width="13" stroke-linecap="round"/><rect x="168" y="${f1(nowY)}" width="352" height="${f1(300-nowY)}" fill="url(#s2water)"/><path d="M168 ${f1(nowY)} Q210 ${f1(nowY-4)} 252 ${f1(nowY)} T336 ${f1(nowY)} T420 ${f1(nowY)} T520 ${f1(nowY)}" fill="none" stroke="#e5fbff" stroke-width="4"/><line x1="184" y1="${f1(highY)}" x2="475" y2="${f1(highY)}" stroke="#7B2D8E" stroke-width="3" stroke-dasharray="8 6"/><line x1="184" y1="${f1(lowY)}" x2="475" y2="${f1(lowY)}" stroke="#0072B2" stroke-width="3" stroke-dasharray="8 6"/><text x="194" y="${f1(highY-9)}" class="halo" style="fill:#582969;font-weight:800">만조선</text><text x="194" y="${f1(lowY+24)}" class="halo" style="fill:#07557a;font-weight:800">간조선</text><circle cx="418" cy="${f1(nowY)}" r="9" fill="#ff9f1c" stroke="#fff" stroke-width="4"/><text x="438" y="${f1(nowY-12)}" class="halo" style="fill:#683d00;font-weight:800">현재</text><path d="M496 ${f1(highY+3)}v${f1(lowY-highY-6)}" stroke="#14212e" stroke-width="3"/>${arrow(496,highY+3,0,lowY-highY-6,'#14212e',3,'',11)}${arrow(496,lowY-3,0,highY-lowY+6,'#14212e',3,'',11)}<text x="454" y="144" class="halo" style="font-weight:800">조차</text><text x="82" y="238" class="halo" text-anchor="middle" style="font-weight:800">해안</text>`;
+svg.innerHTML=`<circle cx="${cx}" cy="${cy}" r="175" fill="none" stroke="#9aa9b8" stroke-dasharray="6 6"/>
+  <path d="${waterPath(cx,cy,108,[{k:20,th:tm},{k:10,th:ts}])}" fill="rgba(86,180,233,.55)" stroke="#0072B2" stroke-width="3"/>
+  <circle cx="${cx}" cy="${cy}" r="78" fill="#3f8f6b" stroke="#14212e" stroke-width="2"/><text x="${cx}" y="${cy+7}" text-anchor="middle" style="fill:#fff;font-weight:700">지구</text>
+  <circle cx="${f1(sx)}" cy="${f1(sy)}" r="32" fill="#F5B72E" stroke="#8a5a00" stroke-width="3"/><text class="halo" x="${f1(sx)}" y="${f1(sy-42)}" text-anchor="middle" font-weight="700">태양</text>
+  <circle cx="${f1(mx)}" cy="${f1(my)}" r="22" fill="#dfe5ec" stroke="#3b4a5a" stroke-width="3"/><text class="halo" x="${f1(mx)}" y="${f1(my-30)}" text-anchor="middle" font-weight="700">달</text>
+  ${tags}<g><circle cx="${f1(ox)}" cy="${f1(oy)}" r="10" fill="#fff" stroke="#14212e" stroke-width="4"/></g><text class="halo" x="${f1(ox+(ox>cx?18:-18))}" y="${f1(oy+(oy>cy?30:-16))}" text-anchor="${ox>cx?'start':'end'}">관측 지점</text>`;
+  $('#s2h').textContent=hh>.7?'만조 쪽 ▲':hh<-.7?'간조 쪽 ▼':'중간 ●';$('#s2level').textContent=(hh>=0?'+':'')+(hh*20).toFixed(1)+' (상대 단위)';
+  $('#s2a').textContent=amp>=1.4?'매우 큼 (일직선 배치)':amp<=.6?'가장 작음 (직각 배치)':'중간';}
+ let playTimer=null;const play=$('#s2play');function setPlaying(on){if(playTimer){clearInterval(playTimer);playTimer=null;}play.setAttribute('aria-pressed',on);play.textContent=on?'⏸ 달 공전 일시 정지':'▶ 달 공전 재생';if(on)playTimer=setInterval(()=>{sm.value=(+sm.value+1)%361;draw();},45);}play.onclick=()=>setPlaying(!playTimer);hooks.leave??={};hooks.leave[1]=()=>setPlaying(false);[sm,ss,so].forEach(x=>x.addEventListener('input',draw));
+ const set=(a,b)=>{ss.value=a;sm.value=b;draw();};$('#s2p1').onclick=()=>set(0,0);$('#s2p2').onclick=()=>set(0,180);$('#s2p3').onclick=()=>set(0,90);
+ mini($('#s2q'),{q:'달 하나만 있다고 할 때, 지구에서 해수면이 높아지는 곳은 몇 군데일까요?',opts:['1군데 (달 쪽)','2군데 (달 쪽과 그 반대쪽)','3군데'],ans:1,hint:'위 그림에서 ▲높음 표시를 세어 보세요.',exp:'달 쪽과 그 반대쪽, 두 곳에서 높아져요. 왜 그런지 다음 슬라이드에서 알아봐요.'});
+ draw();})();
+
+/* ================= 3. 기조력 ================= */
+(()=>{const svg=$('#s3svg');const on={b:true,c:true,g:true,t:true,w:true};let sel='A',orbit=0;const FC=62,R=100,bcx=420,cy=270,earthOrbit=28,moonOrbit=205;let playTimer=null;
+ const defs=[['b','공통 질량 중심','#14212e'],['c','원심력',C.cen],['g','달의 인력',C.gra],['t','기조력',C.tid],['w','해수면','#56B4E9']];
+ const tg=$('#s3tg');defs.forEach(([k,n,col])=>{const b=document.createElement('button');b.className='btn';b.dataset.k=k;b.innerHTML=`<i class="sw" style="background:${col}"></i>${n} <span></span>`;b.onclick=()=>{on[k]=!on[k];draw();};tg.appendChild(b);});
+ const ptsDef={A:[0,'A (달에 가장 가까운 지점)'],X:[90,'X (적도 옆 지점)'],B:[180,'B (달에서 가장 먼 지점)']};
+ Object.entries(ptsDef).forEach(([k,[a,n]])=>{const b=document.createElement('button');b.className='btn';b.dataset.p=k;b.textContent=n;b.onclick=()=>{sel=k;draw();};$('#s3pts').appendChild(b);});
+ function geometry(){const u=rad(orbit),ux=Math.cos(u),uy=Math.sin(u),cx=bcx-earthOrbit*ux,cy0=cy-earthOrbit*uy,mx=bcx+moonOrbit*ux,my=cy+moonOrbit*uy;return{u,ux,uy,cx,cy0,mx,my};}
+ const P=a=>{const{cx,cy0,u}=geometry(),aa=rad(a)+u;return[cx+R*Math.cos(aa),cy0+R*Math.sin(aa)];};
+ function vec(p){const{ux,uy,cx,cy0,mx,my}=geometry(),dx=mx-p[0],dy=my-p[1],L=Math.hypot(dx,dy),gm=1+.5*((p[0]-cx)*ux+(p[1]-cy0)*uy)/R,g=[FC*gm*dx/L,FC*gm*dy/L],c=[-FC*ux,-FC*uy];return{g,c,t:[g[0]+c[0],g[1]+c[1]],gm};}
+ function draw(){const{u,cx,cy0,mx,my}=geometry();let s=`<circle cx="${bcx}" cy="${cy}" r="${moonOrbit}" fill="none" stroke="#d3dbe4" stroke-dasharray="5 7"/><circle cx="${bcx}" cy="${cy}" r="${earthOrbit}" fill="none" stroke="#9aa9b8" stroke-dasharray="4 5"/>`;
+  if(on.w)s+=`<path d="${waterPath(cx,cy0,112,[{k:14,th:u}])}" fill="rgba(86,180,233,.5)" stroke="#0072B2" stroke-width="3"/>`;
+  s+=`<circle cx="${cx}" cy="${cy0}" r="${R}" fill="#cfe8f5" stroke="#14212e" stroke-width="3"/><circle cx="${cx}" cy="${cy0}" r="5" fill="#14212e"/><text class="halo" x="${cx}" y="${cy0+8}" text-anchor="middle">지구</text><line x1="${cx}" y1="${cy0}" x2="${mx}" y2="${my}" stroke="#7a8ba0" stroke-dasharray="5 6"/><circle cx="${mx}" cy="${my}" r="30" fill="#dfe5ec" stroke="#3b4a5a" stroke-width="3"/><text class="halo" x="${mx}" y="${my+48}" text-anchor="middle" font-weight="700">달</text>`;
+  if(on.b)s+=`<circle cx="${bcx}" cy="${cy}" r="8" fill="#fff" stroke="#14212e" stroke-width="4"/><text class="halo" x="${bcx}" y="${cy-14}" text-anchor="middle">공통 질량 중심</text>`;
+  [0,45,90,135,180,225,270,315].forEach(a=>{const p=P(a),v=vec(p);if(on.g)s+=arrow(p[0],p[1],v.g[0],v.g[1],C.gra,3);if(on.c)s+=arrow(p[0],p[1],v.c[0],v.c[1],C.cen,3);if(on.t)s+=arrow(p[0],p[1],v.t[0],v.t[1],C.tid,6,'',14);});
+  const sp=P(ptsDef[sel][0]);s+=`<circle cx="${f1(sp[0])}" cy="${f1(sp[1])}" r="14" fill="none" stroke="#f0a000" stroke-width="5"/>`;
+  Object.entries(ptsDef).forEach(([k,[a]])=>{const p=P(a),o=k==='A'?[22,-16]:k==='B'?[-22,-16]:[0,38];s+=`<circle cx="${f1(p[0])}" cy="${f1(p[1])}" r="6" fill="#14212e"/><text class="halo" x="${f1(p[0]+o[0])}" y="${f1(p[1]+o[1])}" text-anchor="middle" font-weight="800">${k}</text>`;});svg.innerHTML=s;
+  $$('#s3tg .btn').forEach(b=>{const k=b.dataset.k;b.setAttribute('aria-pressed',on[k]);b.lastElementChild.textContent=on[k]?'ON':'OFF';});$$('#s3pts .btn').forEach(b=>b.setAttribute('aria-pressed',b.dataset.p===sel));
+  const v=vec(P(ptsDef[sel][0])),tl=Math.hypot(v.t[0],v.t[1]);$('#s3bars').innerHTML=`<div class="brow"><span>원심력</span><div class="bt"><i style="width:60%;background:${C.cen}"></i></div></div><div class="brow"><span>달의 인력</span><div class="bt"><i style="width:${60*v.gm}%;background:${C.gra}"></i></div></div><div class="brow"><span>기조력</span><div class="bt"><i style="width:${tl/FC*60}%;background:${C.tid}"></i></div></div>`;
+  const m={A:'달의 인력 > 원심력 → 기조력은 달 쪽 → 해수면 높아짐',X:'기조력은 지구 중심 방향으로 작용해요.',B:'원심력 > 달의 인력 → 기조력은 달의 반대쪽 → 해수면 높아짐'};$('#s3ptmsg').textContent=m[sel];$('#s3msg').textContent=on.b&&!on.c&&!on.g&&!on.t?'지구와 달은 공통 질량 중심을 중심으로 회전해요. 지구는 질량이 커서 이 점이 지구 안쪽(중심에서 약 1,650 km)에 있어요.':on.c&&!on.g?'원심력 방향은 공통 질량 중심을 기준으로 함께 바뀌어요.':on.g&&!on.t?'달의 인력은 달에 가까울수록 커져요.':on.t?'기조력 = 달의 인력 + 원심력(합력). 지구와 달이 공전하면 힘의 방향도 함께 바뀌어요.':'버튼으로 힘을 켜 보세요.';}
+ let step=0;const seq=[{b:1,c:0,g:0,t:0,w:0},{b:1,c:1,g:0,t:0,w:0},{b:1,c:1,g:1,t:0,w:0},{b:1,c:1,g:1,t:1,w:0},{b:1,c:1,g:1,t:1,w:1}];$('#s3step').onclick=()=>{const q=seq[step%5];Object.keys(on).forEach(k=>on[k]=!!q[k]);step++;draw();};$('#s3all').onclick=()=>{Object.keys(on).forEach(k=>on[k]=true);draw();};const pb=$('#s3play');function setPlaying(active){if(playTimer){clearInterval(playTimer);playTimer=null;}pb.setAttribute('aria-pressed',active);pb.textContent=active?'⏸ 공전 일시 정지':'▶ 공전 재생';if(active)playTimer=setInterval(()=>{orbit=(orbit+1)%360;draw();},60);}pb.onclick=()=>setPlaying(!playTimer);hooks.leave??={};hooks.leave[2]=()=>setPlaying(false);draw();})();
+
+/* ================= 4. 질문 ================= */
+(()=>{const fig=hi=>{const ring=k=>hi===k||hi==='all'?'<circle r="16" fill="none" stroke="#f0a000" stroke-width="5"/>':'';
+ const pt=(k,x,y,dx,dy)=>`<g transform="translate(${x} ${y})">${ring(k)}<circle r="6" fill="#14212e"/><text class="halo" x="${dx}" y="${dy}" text-anchor="middle" font-weight="800">${k}</text></g>`;
+ return `<circle cx="150" cy="130" r="80" fill="#cfe8f5" stroke="#14212e" stroke-width="3"/><circle cx="150" cy="130" r="4" fill="#14212e"/><line x1="230" y1="130" x2="326" y2="130" stroke="#7a8ba0" stroke-dasharray="5 6"/><circle cx="350" cy="130" r="24" fill="#dfe5ec" stroke="#3b4a5a" stroke-width="3"/><text class="halo" x="350" y="178" text-anchor="middle" font-weight="700">달</text>${pt('A',230,130,26,-14)}${pt('B',70,130,-26,-14)}${pt('X',150,210,0,36)}`;};
+ const svg=$('#s4fig');svg.innerHTML=fig('');
+ const qs=[
+ {q:'지구가 공통 질량 중심을 회전하며 생기는 <b>원심력</b>의 크기는 지표면의 지점에 따라 어떻게 달라질까요?',fig:'all',opts:['달에 가까운 쪽일수록 크다','달에서 먼 쪽일수록 크다','지표면 어디서나 같은 크기이다','지구 중심에서 가장 크다'],ans:2,hint:'슬라이드 3에서 파란 화살표의 길이를 비교해 보세요.',exp:'원심력은 지표면 어디서나 같은 크기예요.'},
+ {q:'<b>달의 인력</b>은 달과의 거리에 따라 어떻게 달라질까요?',fig:'all',opts:['달에 가까울수록 커진다','달에서 멀수록 커진다','거리와 관계없이 같다'],ans:0,hint:'주황색 화살표는 A와 B 중 어디에서 더 길었나요?',exp:'달의 인력은 달에 가까울수록 커져요.'},
+ {q:'달에 가장 가까운 지점 <b>A</b>에서 달의 인력과 원심력의 크기를 비교하면?',fig:'A',opts:['달의 인력 > 원심력','달의 인력 < 원심력','달의 인력 = 원심력'],ans:0,hint:'A에서는 인력 화살표가 파란 화살표보다 길었어요.',exp:'A에서는 달의 인력이 더 커서 기조력이 달 쪽으로 작용해요.'},
+ {q:'달에서 가장 먼 지점 <b>B</b>에서 달의 인력과 원심력의 크기를 비교하면?',fig:'B',opts:['달의 인력 > 원심력','달의 인력 < 원심력','달의 인력 = 원심력'],ans:1,hint:'B는 달에서 멀어서 달의 인력이 약해요. 원심력은 어디서나 같아요.',exp:'B에서는 원심력이 더 커서 기조력이 달의 반대쪽으로 작용해요.'},
+ {q:'따라서 기조력의 방향은 <b>A</b>와 <b>B</b>에서 각각 어느 쪽일까요?',fig:'all',opts:['A: 달 쪽 / B: 달 반대쪽','A: 달 반대쪽 / B: 달 쪽','A, B 모두 달 쪽','A, B 모두 달 반대쪽'],ans:0,hint:'기조력은 인력과 원심력 중 더 큰 힘의 방향으로 작용해요.',exp:'두 곳 모두 해수면이 높아져요.'},
+ {q:'<b>X</b>를 지나는 선상의 지점에서 기조력은 어느 방향으로 작용할까요?',fig:'X',opts:['달 쪽','달의 반대쪽','지구 중심 방향'],ans:2,hint:'슬라이드 3에서 지점 X를 눌러 확인해 보세요.',exp:'X를 지나는 선상의 지점에서는 지구 중심 방향으로 기조력이 작용해요.'},
+ ];
+ Quiz($('#q4'),qs,{onShow:q=>{svg.innerHTML=fig(q.fig||'');},onDone:(n,t)=>state.sc.q4=[n,t]});})();
+
+/* ================= 5. 공식 ================= */
+(()=>{const sm=$('#s5m'),sr=$('#s5r'),sr2=$('#s5r2');
+ const fm=x=>x>=1e8?(x/1e8).toFixed(1)+'억 배':x>=1e4?Math.round(x/1e4).toLocaleString()+'만 배':x>=1000?Math.round(x).toLocaleString()+' 배':x>=10?Math.round(x)+' 배':x.toFixed(1)+' 배';
+ const bar=(n,v,c)=>{let w=v/2*100,txt='';if(w>100){w=100;txt=' ▶ 훨씬 큼';}if(w<1.5){w=1.5;txt=' ◀ 거의 0';}return `<div class="brow"><span>${n}</span><div class="bt"><i style="width:${w}%;background:${c}"></i></div></div>${txt?`<div class="small" style="text-align:right">${txt}</div>`:''}`;};
+ function calc(){const m=Math.pow(10,+sm.value),r=+sr.value,v=m/Math.pow(r,3);
+  $('#s5mv').textContent=m<1.5?'1배 (달)':fm(m);$('#s5rv').textContent=r===1?'1배 (달)':r+'배';
+  $('#s5bars').innerHTML=bar('달 (기준)',1,C.moon)+bar('내가 고른 천체',v,C.sun);
+  $('#s5val').textContent=v>=10?fm(v):v<0.001?'거의 0 (1/'+Math.round(1/v).toLocaleString()+')':v.toFixed(2)+' 배'+(v>.4&&v<.6?' (≈ 1/2)':'');
+  $('#s5msg').textContent=m>1e6&&r>300?'질량은 매우 크지만 거리가 멀어 기조력은 달의 약 1/2!':m>1e6?'질량만 보면 태양이 훨씬 큰 기조력을 만들 것 같지만…':r>300?'거리가 멀어지면 기조력이 급격히 작아져요 (r³에 반비례).':'값을 바꿔 보세요.';}
+ [sm,sr].forEach(x=>x.addEventListener('input',calc));
+ const pre=[[0,1],[Math.log10(2.8e7),1],[0,387],[Math.log10(2.8e7),387]];
+ $$('[data-pre]').forEach(b=>b.onclick=()=>{const p=pre[+b.dataset.pre];sm.value=p[0];sr.value=p[1];calc();});
+ mini($('#s5q1'),{q:'태양의 기조력은 달 기조력의 약 몇 배일까요?',opts:['약 2,800만 배','약 1/2 배','약 387 배','달과 같다'],ans:1,hint:'③ 버튼으로 질량과 거리를 함께 넣어 보세요.',exp:'태양은 질량이 달의 약 2,800만 배지만 거리가 약 387배 멀어 기조력은 약 1/2이에요.'});
+ const calc2=()=>{const r=+sr2.value;$('#s5r2v').textContent=r.toFixed(1)+'배';$('#s5bars').innerHTML=bar('처음 (r=1)',1,C.moon)+bar('거리 r 변화 후',1/Math.pow(r,3),C.sun);$('#s5val').textContent=(1/Math.pow(r,3)).toFixed(3)+' 배';$('#s5msg').textContent='m이 같을 때 T는 r³에 반비례해요.';};
+ sr2.addEventListener('input',calc2);
+ mini($('#s5q2'),{q:'거리 r이 2배가 되면 기조력 T는 처음의 몇 배가 될까요?',opts:['2배','1/2 배','1/4 배','1/8 배'],ans:3,hint:'T ∝ m/r³ 이므로 r에 2를 세 번 곱해요.',exp:'2³ = 8 이므로 T는 1/8 배가 돼요.'});
+ Tabs(['s5t1','s5t2'],[$('#s5p1'),$('#s5p2')],i=>{$('#s5q1box').hidden=i!==0;i===0?calc():calc2();});
+ calc();})();
+
+/* ================= 6. 만조와 간조 ================= */
+(()=>{const svg=$('#s6svg'),side=$('#s6side'),sl=$('#s6t');const P=24+50/60,tilt=rad(23.5);
+ const th=m=>rad(90-360*(m/60)/P),lvl=m=>Math.cos(2*th(m));
+ const hh=m=>String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0');
+ const geo=(lat,lon,spin,cx,cy,R)=>{const p=rad(lon)+spin-PI/2,l=rad(lat),c=Math.cos(l),s=Math.sin(l),cl=Math.cos(tilt),st=Math.sin(tilt);return{x:cx+R*(c*Math.cos(p)*cl+s*st),y:cy-R*(-c*Math.cos(p)*st+s*cl),z:-R*c*Math.sin(p)};};
+ function linePath(samples){let d='',open=false;for(const q of samples){if(q.z>=0){d+=(open?'L':'M')+f1(q.x)+' '+f1(q.y);open=true;}else open=false;}return d;}
+ function landPath(poly,spin,cx,cy,R){let pts=poly.map(([lon,lat])=>geo(lat,lon,spin,cx,cy,R)),out=[];for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length],ia=a.z>=0,ib=b.z>=0;if(ia)out.push(a);if(ia!==ib){const t=a.z/(a.z-b.z);out.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:0});}}return out.length<3?'':'M'+out.map(q=>f1(q.x)+' '+f1(q.y)).join('L')+'Z';}
+ const continents=[
+  [[-132,53],[-124,28],[-108,14],[-94,18],[-82,8],[-64,18],[-78,38],[-97,50]],
+  [[-78,9],[-49,8],[-36,-7],[-49,-32],[-68,-56],[-74,-25]],
+  [[-18,35],[5,37],[34,31],[49,10],[38,-15],[25,-35],[7,-34],[-3,-5]],
+  [[-12,37],[-8,57],[18,70],[48,61],[70,71],[110,61],[146,48],[133,26],[105,10],[76,7],[55,28],[36,35],[15,31]],
+  [[112,-11],[151,-10],[154,-38],[132,-45],[113,-30]],
+  [[-53,59],[-24,62],[-31,81],[-48,83]]
+ ];
+ function renderGlobe(spin,m,cx,cy,R){
+  const g=[];g.push(`<defs><radialGradient id="s6earth3d" cx="36%" cy="30%"><stop stop-color="#70c6dc"/><stop offset=".72" stop-color="#287f9f"/><stop offset="1" stop-color="#12415f"/></radialGradient><clipPath id="s6clip3d"><circle cx="${cx}" cy="${cy}" r="${R}"/></clipPath></defs><circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#s6earth3d)" stroke="#123e59" stroke-width="4"/>`);
+  const lines=[];for(const lat of [-60,-45,0,45,60]){const pts=[];for(let lon=-180;lon<=180;lon+=3)pts.push(geo(lat,lon,spin,cx,cy,R));const d=linePath(pts);if(d)lines.push(`<path d="${d}" fill="none" stroke="${lat===0?'#f8edb5':'#d8f1f3'}" stroke-width="${lat===0?2.6:1.25}" stroke-dasharray="${Math.abs(lat)===45?'5 4':''}" opacity="${lat===0?.9:.46}"/>`);}
+  for(let lon=-180;lon<180;lon+=30){const pts=[];for(let lat=-88;lat<=88;lat+=2)pts.push(geo(lat,lon,spin,cx,cy,R));const d=linePath(pts);if(d)lines.push(`<path d="${d}" fill="none" stroke="#d8f1f3" stroke-width="1" opacity=".33"/>`);}
+  const lands=continents.map(poly=>{const d=landPath(poly,spin,cx,cy,R);return d?`<path d="${d}" fill="#94c77a" stroke="#d9e7b5" stroke-width="1.5" opacity=".96"/>`:'';}).join('');
+  const obs=geo(45,0,spin,cx,cy,R),dot=obs.z>=0?`<circle cx="${f1(obs.x)}" cy="${f1(obs.y)}" r="8" fill="#ffad22" stroke="#fff" stroke-width="3"/><text class="halo" x="${f1(obs.x+12)}" y="${f1(obs.y-10)}" font-weight="800">관측 지점</text>`:'';
+  const ax=R*1.15,nx=Math.sin(tilt);const axis=`<line x1="${f1(cx-ax*nx)}" y1="${f1(cy+ax*Math.cos(tilt))}" x2="${f1(cx+ax*nx)}" y2="${f1(cy-ax*Math.cos(tilt))}" stroke="#753d86" stroke-width="4"/><text class="halo" x="${cx+ax*nx+12}" y="${cy-ax*Math.cos(tilt)+3}" style="fill:#5a2c70;font-weight:800">북극 · 자전축 23.5°</text>`;
+  const northText=``;
+  const moon=`<circle cx="${cx+232}" cy="${cy}" r="29" fill="#eef2f5" stroke="#6c7b88" stroke-width="3"/><path d="M${cx+216} ${cy-8}q10 -15 20 -2t16 2" fill="none" stroke="#aab5bf" stroke-width="3"/><text class="halo" x="${cx+232}" y="${cy+49}" text-anchor="middle" font-weight="800">달 (고정)</text>`;
+  g.push(`<g clip-path="url(#s6clip3d)">${lands}${lines.join('')}</g>${dot}${axis}${northText}${moon}`);
+  g.push(`<rect x="615" y="16" width="124" height="48" rx="13" fill="#fff" stroke="#0b4f8a" stroke-width="2"/><text x="677" y="48" text-anchor="middle" style="font-size:25px;font-weight:800;fill:#0b4f8a">${hh(m)}</text>`);
+  g.push(`<text class="halo" x="${cx-70}" y="${cy+14}" style="font-size:16px;font-weight:800">적도</text><text class="halo" x="${cx-101}" y="${cy-65}" style="font-size:15px;font-weight:800">중위도선</text>`);
+  return `<rect width="760" height="520" rx="18" fill="#eaf6ff"/>${g.join('')}`;
+ }
+ function draw(){const m=+sl.value,h=lvl(m),cx=282,cy=268,R=116,spin=rad((m/60)*360/P);
+  svg.innerHTML=renderGlobe(spin,m,cx,cy,R);
+  const lab=[[0,'00:00 간조',cx,484,'middle'],[373,'06:13 만조',492,270,'start'],[745,'12:25 간조',cx,64,'middle'],[1118,'18:38 만조',74,270,'end']];
+  // Keep the transition illustration in sync with the selected time.
+  $('#s6tv').textContent=hh(m);$('#s6st').textContent=h>.65?'만조 · 바닷길이 잠겨요':h<-.65?'간조 · 바닷길이 드러나요':h>0?'물이 차오르는 중':'물이 빠지는 중';
+  const waterY=178-55*h,open=h<-.15;
+  side.innerHTML=`<defs><linearGradient id="shoreSky" x2="0" y2="1"><stop stop-color="#dff4ff"/><stop offset="1" stop-color="#fff"/></linearGradient><linearGradient id="shoreWater" x2="0" y2="1"><stop stop-color="#63c8e6"/><stop offset="1" stop-color="#1475ad"/></linearGradient></defs>
+   <rect width="760" height="360" rx="16" fill="url(#shoreSky)"/><path d="M0 200 Q50 183 115 196 L142 214 H0Z M588 211 Q624 190 666 180 Q717 172 760 191 V360 H588Z" fill="#d6bd91" stroke="#9c805b" stroke-width="3"/>
+   <rect x="120" y="${f1(waterY)}" width="468" height="160" fill="url(#shoreWater)"/><path d="M120 ${f1(waterY)} Q180 ${f1(waterY-6)} 240 ${f1(waterY)} T360 ${f1(waterY)} T480 ${f1(waterY)} T588 ${f1(waterY)}" fill="none" stroke="#e4fbff" stroke-width="5"/>
+   <path d="M110 211 Q230 196 352 211 T590 207" fill="none" stroke="#795c3f" stroke-width="30" stroke-linecap="round" opacity="${open?'.98':'.35'}"/><path d="M110 207 Q230 192 352 207 T590 203" fill="none" stroke="${open?'#edce94':'#9dd9e8'}" stroke-width="20" stroke-linecap="round" opacity="${open?'1':'.8'}"/>
+   <path d="M58 187l-22 38h44zM58 165l-18 30h36zM58 164v61M708 158l-23 42h46zM708 134l-18 32h36zM708 133v67" fill="#4d8056"/>
+   <rect x="197" y="18" width="366" height="43" rx="12" fill="#fff" stroke="#b7ccd9"/><text x="380" y="47" text-anchor="middle" style="font-size:21px;font-weight:800;fill:${open?'#00704a':'#0b4f8a'}">${open?'간조: 해안과 섬 사이 바닷길이 드러남':'만조: 바닷길이 물에 잠김'}</text>
+   <text x="70" y="270" class="halo" text-anchor="middle" style="font-weight:800">해안</text><text x="704" y="270" class="halo" text-anchor="middle" style="font-weight:800">섬</text><text x="350" y="250" class="halo" text-anchor="middle" style="font-weight:800;fill:${open?'#6b4a20':'#0b4f8a'}">바닷길</text>`;
+ }
+ sl.addEventListener('input',draw);let playTimer=null;const pb=$('#s6play');function setPlaying(active){if(playTimer){clearInterval(playTimer);playTimer=null;}pb.setAttribute('aria-pressed',active);pb.textContent=active?'⏸ 자동 재생 일시 정지':'▶ 자동 재생';if(active)playTimer=setInterval(()=>{sl.value=(+sl.value+1)%1441;draw();},35);}pb.onclick=()=>setPlaying(!playTimer);hooks[5]=()=>{if(!playTimer)setPlaying(true);};hooks.leave??={};hooks.leave[5]=()=>setPlaying(false);
+ mini($('#s6q1'),{q:'00:00~24:00 동안 이 섬에서 만조는 몇 번 나타날까요? (슬라이더를 끝까지 움직여 보세요)',opts:['1번','2번','3번'],ans:1,hint:'06:13 근처와 18:38 근처를 확인해 보세요.',exp:'이론적으로 하루에 만조와 간조가 각각 두 번씩 나타나요.'});
+ mini($('#s6q2'),{q:'만조에서 다음 만조까지의 시간(조석 주기)은 약 얼마일까요?',opts:['약 6시간 12분','약 12시간 25분','약 24시간 50분'],ans:1,hint:'06:13 → 18:38 사이를 계산해 보세요.',exp:'지구가 한 번 자전하는 동안 달도 공전해 같은 위치로 오기까지 약 24시간 50분이 걸려요. 조석 주기는 그 절반인 12시간 25분이에요.'});draw();})();
+
+/* ================= 그래프 공통 ================= */
+function Chart(w,h,m,xr,yr){return{w,h,m,X:x=>m.l+(x-xr[0])/(xr[1]-xr[0])*(w-m.l-m.r),Y:y=>h-m.b-(y-yr[0])/(yr[1]-yr[0])*(h-m.t-m.b)};}
+function curve(Ch,fn,x0,x1,st){let d='';for(let x=x0;x<=x1+1e-9;x+=st)d+=(d?'L':'M')+f1(Ch.X(x))+' '+f1(Ch.Y(fn(x)));return d;}
+function extrema(fn,x0,x1){const o=[];const st=.01;let p=fn(x0),c=fn(x0+st);for(let x=x0+st;x<x1-st;x+=st){const n=fn(x+st);if(c>p&&c>=n)o.push({t:x,h:c,type:'high'});if(c<p&&c<=n)o.push({t:x,h:c,type:'low'});p=c;c=n;}return o;}
+const hhmm=t=>{const m=Math.round(t*60);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');};
+const TIDE={d:(p=0,a=1)=>t=>.3+a*Math.cos(2*PI*(t-12-p)/24),s:(p=0,a=1)=>t=>.4+1.5*a*Math.cos(2*PI*(t-3-p)/12.42),m:(p=0,a=1)=>t=>.4+.9*a*Math.cos(2*PI*(t-4-p)/12.42)+.7*a*Math.cos(2*PI*(t-8-p)/24.83)};
+const TN={d:'일주조',s:'반일주조',m:'혼합조'};
+const DEF={d:'하루 동안 만조와 간조가 한 번씩만 나타난다.',s:'하루 동안 만조와 간조가 두 번씩 나타나고 조차가 비슷하다.',m:'하루 동안 만조와 간조가 두 번씩 나타나고 조차가 다르다.'};
+function axesYT(Ch,ticks,unitLbl){let s='';ticks.forEach(v=>{s+=`<line x1="${Ch.m.l}" x2="${Ch.w-Ch.m.r}" y1="${f1(Ch.Y(v))}" y2="${f1(Ch.Y(v))}" stroke="${v===0?'#14212e':'#dde5ee'}" ${v===0?'stroke-dasharray="7 5" stroke-width="2.5"':''}/><text x="${Ch.m.l-8}" y="${f1(Ch.Y(v)+7)}" text-anchor="end">${v}</text>`;});return s+`<text x="${Ch.m.l-8}" y="${Ch.m.t-10}" text-anchor="end" style="font-size:18px">${unitLbl}</text>`;}
+function axesXT(Ch,ticks,fmt){let s=`<line x1="${Ch.m.l}" x2="${Ch.w-Ch.m.r}" y1="${Ch.h-Ch.m.b}" y2="${Ch.h-Ch.m.b}" stroke="#14212e" stroke-width="2.5"/><line x1="${Ch.m.l}" x2="${Ch.m.l}" y1="${Ch.m.t}" y2="${Ch.h-Ch.m.b}" stroke="#14212e" stroke-width="2.5"/>`;ticks.forEach(v=>{s+=`<line x1="${f1(Ch.X(v))}" x2="${f1(Ch.X(v))}" y1="${Ch.h-Ch.m.b}" y2="${Ch.h-Ch.m.b+8}" stroke="#14212e" stroke-width="2"/><text x="${f1(Ch.X(v))}" y="${Ch.h-Ch.m.b+32}" text-anchor="middle">${fmt(v)}</text>`;});return s;}
+
+/* ================= 7. 그래프 읽기 ================= */
+(()=>{const svg=$('#s7svg');const fn=t=>.75*Math.cos(2*PI*(t-3)/12.4167)+.25*Math.cos(2*PI*(t-3)/24.8333);
+ const Ch=Chart(800,430,{l:130,r:30,t:36,b:64},[0,24],[-1.25,1.3]);const E=extrema(fn,0,24);
+ const tasks=[{q:'① 해수면이 가장 높아진 곳, <b>만조</b>를 터치하세요.',h:'곡선에서 가장 위로 솟은 곳이에요.'},{q:'② 해수면이 가장 낮아진 곳, <b>간조</b>를 터치하세요.',h:'곡선에서 가장 아래로 내려간 곳이에요.'},{q:'③ <b>조석 주기는 무엇일까요?</b> 조석 주기에 해당하는 두 부분을 차례로 터치하세요.',h:'만조에서 다음 만조까지의 시간이에요.'},{q:'④ <b>조차</b>: 연속된 만조와 간조(이웃한 두 점)를 차례로 터치하세요.',h:'이웃한 만조와 간조 사이의 높이 차예요.'}];
+ let ti=0,buf=[],found={marks:new Set(),period:null,range:null},all=false;
+ const lead=$('#s7task'),fb=$('#s7fb');
+ function prog(){$('#s7prog').innerHTML=tasks.map((_,k)=>`<span class="dot ${k<ti?'ok':k===ti?'cur':''}">${k<ti?'✔':k+1}</span>`).join('');lead.innerHTML=ti<tasks.length?tasks[ti].q:'🎉 모두 찾았어요! 아래 확인 문제도 풀어 보세요.';$('#s7hinttext').hidden=true;}
+ function draw(){const mk=all?new Set(E.map((_,i)=>i)):found.marks;
+  let s=axesYT(Ch,[-1,0,1],'')+axesXT(Ch,[0,6,12,18,24],v=>String(v).padStart(2,'0')+':00');
+  s+=`<text x="${Ch.m.l-10}" y="${f1(Ch.Y(1.2))}" text-anchor="end" style="font-size:18px">높다 ▲</text><text x="${Ch.m.l-10}" y="${f1(Ch.Y(-1.2))}" text-anchor="end" style="font-size:18px">낮다 ▼</text><text x="${Ch.m.l-10}" y="${f1(Ch.Y(0)-8)}" text-anchor="end" style="font-size:18px">평균 해수면</text><text x="${Ch.w-Ch.m.r}" y="${Ch.h-8}" text-anchor="end">시각(시)</text>`;
+  s+=`<path d="${curve(Ch,fn,0,24,.1)}" fill="none" stroke="#D55E00" stroke-width="5"/>`;
+  const rg=all?[[0,1],[1,2],[2,3]]:found.range?[found.range]:[],pd=all?[[0,2],[1,3]]:found.period?[found.period]:[];
+  rg.forEach(([a,b],n)=>{const A=E[a],B=E[b],x=(Ch.X(A.t)+Ch.X(B.t))/2;s+=`<line x1="${f1(Ch.X(A.t))}" y1="${f1(Ch.Y(A.h))}" x2="${f1(x+20)}" y2="${f1(Ch.Y(A.h))}" stroke="#14212e" stroke-dasharray="3 4"/><line x1="${f1(Ch.X(B.t))}" y1="${f1(Ch.Y(B.h))}" x2="${f1(x+20)}" y2="${f1(Ch.Y(B.h))}" stroke="#14212e" stroke-dasharray="3 4"/>${arrow(x+20,Ch.Y(A.h),0,Ch.Y(B.h)-Ch.Y(A.h),'#14212e',3)}${arrow(x+20,Ch.Y(B.h),0,Ch.Y(A.h)-Ch.Y(B.h),'#14212e',3)}<text class="halo" x="${f1(x+28)}" y="${f1((Ch.Y(A.h)+Ch.Y(B.h))/2+7)}" style="font-weight:800">조차</text>`;});
+  pd.forEach(([a,b])=>{const A=E[a],B=E[b],y=A.type==='high'?Ch.Y(1.2):Ch.Y(-1.2)+(A.type==='low'?0:0);const yy=A.type==='high'?Ch.Y(A.h)-26:Ch.Y(A.h)+30;s+=`<line x1="${f1(Ch.X(A.t))}" x2="${f1(Ch.X(A.t))}" y1="${f1(Ch.Y(A.h))}" y2="${f1(yy)}" stroke="#14212e" stroke-dasharray="3 4"/><line x1="${f1(Ch.X(B.t))}" x2="${f1(Ch.X(B.t))}" y1="${f1(Ch.Y(B.h))}" y2="${f1(yy)}" stroke="#14212e" stroke-dasharray="3 4"/>${arrow(Ch.X(A.t),yy,Ch.X(B.t)-Ch.X(A.t),0,'#14212e',3)}${arrow(Ch.X(B.t),yy,Ch.X(A.t)-Ch.X(B.t),0,'#14212e',3)}<text class="halo" x="${f1((Ch.X(A.t)+Ch.X(B.t))/2)}" y="${f1(yy+(A.type==='high'?-8:26))}" text-anchor="middle" style="font-weight:800">조석 주기 ≈ 12시간 25분</text>`;});
+  E.forEach((e,i)=>{const x=Ch.X(e.t),y=Ch.Y(e.h);const shown=mk.has(i);
+   s+=`<g role="button" tabindex="0" data-i="${i}" aria-label="그래프의 ${i+1}번째 극점"><circle class="focus" cx="${f1(x)}" cy="${f1(y)}" r="30" fill="transparent" stroke="none"/>${shown?`<circle cx="${f1(x)}" cy="${f1(y)}" r="9" fill="${e.type==='high'?'#7B2D8E':'#0072B2'}" stroke="#fff" stroke-width="3"/><text class="halo" x="${f1(x)}" y="${f1(y+(e.type==='high'?-16:34))}" text-anchor="middle" style="font-weight:800">${e.type==='high'?'만조':'간조'}</text>`:`<circle cx="${f1(x)}" cy="${f1(y)}" r="7" fill="#fff" stroke="#14212e" stroke-width="3" stroke-dasharray="3 2"/>`}${buf.includes(i)?`<circle cx="${f1(x)}" cy="${f1(y)}" r="16" fill="none" stroke="#f0a000" stroke-width="5"/>`:''}</g>`;});
+  const ct=+$('#s7t').value;s+=`<line x1="${f1(Ch.X(ct))}" x2="${f1(Ch.X(ct))}" y1="${Ch.m.t}" y2="${Ch.h-Ch.m.b}" stroke="#555" stroke-dasharray="4 4"/><circle cx="${f1(Ch.X(ct))}" cy="${f1(Ch.Y(fn(ct)))}" r="8" fill="#f0a000" stroke="#14212e" stroke-width="2"/>`;
+  svg.innerHTML=s;$('#s7tv').textContent=hhmm(ct);const v=fn(ct),up=fn(ct+.05)>v;$('#s7st').textContent=(v>0?'평균보다 높음':'평균보다 낮음')+(up?' · 높아지는 중':' · 낮아지는 중');}
+ function tap(i){if(ti>=tasks.length)return;const e=E[i];
+  if(ti===0){if(e.type==='high'){found.marks.add(i);ok('✔ 정답! 해수면이 가장 높아진 만조예요.');}else bad('✖ 이곳은 가장 높은 곳이 아니에요.');}
+  else if(ti===1){if(e.type==='low'){found.marks.add(i);ok('✔ 정답! 해수면이 가장 낮아진 간조예요.');}else bad('✖ 이곳은 가장 낮은 곳이 아니에요.');}
+  else{buf.push(i);if(buf.length<2){draw();return;}const [a,b]=buf;buf=[];
+   if(ti===2){if(E[a].type===E[b].type&&Math.abs(a-b)===2){found.period=[Math.min(a,b),Math.max(a,b)];found.marks.add(a);found.marks.add(b);ok('✔ 정답! 약 12시간 25분이 조석 주기예요.');}else bad('✖ 같은 종류(만조-만조 또는 간조-간조)의 이웃한 두 점을 골라 보세요.');}
+   else{if(E[a].type!==E[b].type&&Math.abs(a-b)===1){found.range=[Math.min(a,b),Math.max(a,b)];found.marks.add(a);found.marks.add(b);ok('✔ 정답! 이웃한 만조와 간조의 높이 차가 조차예요. 두 조차의 크기도 비교해 보세요.');}else bad('✖ 만조와 간조, 서로 이웃한 두 점을 골라 보세요.');}}}
+ function ok(m){fb.className='fb ok';fb.textContent=m;ti++;prog();draw();}
+ function bad(m){fb.className='fb ng';fb.textContent=m+' (💡 힌트를 눌러 보세요)';buf=[];draw();}
+ svg.addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)tap(+g.dataset.i);});
+ svg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const g=e.target.closest('[data-i]');if(g){e.preventDefault();tap(+g.dataset.i);}}});
+ $('#s7hint').onclick=()=>{const h=$('#s7hinttext');h.hidden=!h.hidden;h.textContent=ti<tasks.length?tasks[ti].h:'모두 완료했어요!';};
+ $('#s7all').onclick=e=>{all=!all;e.target.setAttribute('aria-pressed',all);draw();};
+ $('#s7reset').onclick=()=>{ti=0;buf=[];found={marks:new Set(),period:null,range:null};all=false;$('#s7all').setAttribute('aria-pressed','false');fb.className='fb';fb.textContent='';prog();draw();};
+ $('#s7t').addEventListener('input',draw);
+ mini($('#s7q'),{q:'이 그래프에서 이웃한 두 조차(만조-간조 높이 차)는 항상 같을까요?',opts:['항상 같다','지역과 시각에 따라 달라질 수 있다'],ans:1,hint:'위 그래프에서 두 개의 조차 크기를 비교해 보세요.',exp:'하루 동안의 조차는 지역에 따라 달라질 수 있어요. 지구 자전축이 기울어져 달의 공전 궤도면과 지구 적도면이 일치하지 않기 때문이에요.'});
+ const tl=$('#s7tilt');let tk=0;
+ function tilt(){const cx=200,cy=150,Re=84,eps=rad(23.5),lat=rad(40);const Pv=tk===0?[Math.cos(lat-eps),Math.sin(lat-eps)]:[-Math.cos(lat+eps),Math.sin(lat+eps)];
+  const ang=Math.atan2(-Pv[1],Pv[0]),rw=100+14*Math.cos(2*ang);const px=cx+rw*Math.cos(ang),py=cy+rw*Math.sin(ang);
+  const hgt=(3*Pv[0]*Pv[0]-1)/2;
+  tl.innerHTML=`<path d="${waterPath(cx,cy,100,[{k:14,th:0}])}" fill="rgba(86,180,233,.55)" stroke="#0072B2" stroke-width="3"/><circle cx="${cx}" cy="${cy}" r="${Re}" fill="#cfe8f5" stroke="#14212e" stroke-width="3"/>
+  <line x1="${f1(cx-125*Math.sin(eps))}" y1="${f1(cy+125*Math.cos(eps))}" x2="${f1(cx+125*Math.sin(eps))}" y2="${f1(cy-125*Math.cos(eps))}" stroke="#14212e" stroke-width="3"/><text class="halo" x="${f1(cx+130*Math.sin(eps))}" y="${f1(cy-134*Math.cos(eps))}" text-anchor="middle">북극</text>
+  <line x1="${f1(cx-Re*Math.cos(eps))}" y1="${f1(cy-Re*Math.sin(eps))}" x2="${f1(cx+Re*Math.cos(eps))}" y2="${f1(cy+Re*Math.sin(eps))}" stroke="#fff" stroke-width="4" stroke-dasharray="6 5"/><text class="halo" x="${f1(cx-Re*Math.cos(eps)-6)}" y="${f1(cy+Re*Math.sin(eps)+26)}" style="font-size:18px">적도</text>
+  <circle cx="360" cy="${cy}" r="26" fill="#dfe5ec" stroke="#3b4a5a" stroke-width="3"/><text class="halo" x="360" y="${cy+52}" text-anchor="middle">달</text>
+  <circle cx="${f1(px)}" cy="${f1(py)}" r="12" fill="#3f8a45" stroke="#14212e" stroke-width="3"/><text class="halo" x="${f1(px)}" y="${f1(py-20)}" text-anchor="middle" style="font-weight:800">섬</text>`;
+  $('#s7tlmsg').textContent=tk===0?'첫 번째 만조: 섬이 물이 가장 불룩한 곳에 가까워 해수면이 매우 높아요.':'두 번째 만조: 같은 섬이 불룩한 곳에서 비켜나 있어, 이때의 만조는 앞보다 낮아요.';
+  $('#s7tl0').setAttribute('aria-pressed',tk===0);$('#s7tl1').setAttribute('aria-pressed',tk===1);}
+ $('#s7tl0').onclick=()=>{tk=0;tilt();};$('#s7tl1').onclick=()=>{tk=1;tilt();};
+ prog();draw();tilt();})();
+
+/* ================= 8. 조석 유형 ================= */
+const thumb=(fn)=>{const Ch=Chart(220,130,{l:10,r:10,t:8,b:8},[0,24],[-1.5,2.4]);return `<svg viewBox="0 0 220 130" aria-hidden="true"><rect width="220" height="130" fill="#fff"/><line x1="10" x2="210" y1="${f1(Ch.Y(0))}" y2="${f1(Ch.Y(0))}" stroke="#14212e" stroke-dasharray="5 4"/><path d="${curve(Ch,fn,0,24,.2)}" fill="none" stroke="#D55E00" stroke-width="4"/></svg>`;};
+(()=>{let ty='d';const svg=$('#s8svg');const Ch=Chart(560,360,{l:70,r:20,t:30,b:56},[0,24],[-1.5,2.4]);let mark=false;
+ const tb=$('#s8types');Object.keys(TN).forEach(k=>{const b=document.createElement('button');b.className='tab';b.dataset.k=k;b.textContent=TN[k];b.setAttribute('role','tab');b.onclick=()=>{ty=k;draw();};tb.appendChild(b);});
+ function draw(){const fn=TIDE[ty]();const ex=extrema(fn,0,24);
+  let s=axesYT(Ch,[-1,0,1,2],'높이(m)')+axesXT(Ch,[0,6,12,18,24],v=>v)+`<text x="${Ch.w-Ch.m.r}" y="${Ch.h-6}" text-anchor="end">시각(시)</text><path d="${curve(Ch,fn,0,24,.1)}" fill="none" stroke="#D55E00" stroke-width="5"/>`;
+  if(mark)ex.forEach(e=>{s+=`<circle cx="${f1(Ch.X(e.t))}" cy="${f1(Ch.Y(e.h))}" r="8" fill="${e.type==='high'?'#7B2D8E':'#0072B2'}" stroke="#fff" stroke-width="3"/><text class="halo" x="${f1(Ch.X(e.t))}" y="${f1(Ch.Y(e.h)+(e.type==='high'?-14:30))}" text-anchor="middle" style="font-weight:800">${e.type==='high'?'만조':'간조'}</text>`;});
+  svg.innerHTML=s;$$('#s8types .tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.k===ty));
+  const hs=ex.filter(e=>e.type==='high');$('#s8cnt').textContent=mark?hs.length+'번':'? (표시를 켜 보세요)';
+  $('#s8cmp').textContent=mark?(hs.length<2?'—':Math.abs(hs[0].h-hs[1].h)<.35?'비슷하다':'다르다'):'?';
+  $('#s8def').textContent=(mark?'':'')+TN[ty]+': '+DEF[ty];}
+ $('#s8mark').onclick=e=>{mark=!mark;e.target.setAttribute('aria-pressed',mark);e.target.textContent=mark?'만조·간조 표시 끄기':'만조·간조 표시 켜기';draw();};
+ const sel=(id,opts)=>`<select class="sel" id="${id}" aria-label="${id}"><option value="">선택</option>${opts.map(o=>`<option>${o}</option>`).join('')}</select>`;
+ $('#s8tb').innerHTML=Object.keys(TN).map(k=>`<tr><td><b>${TN[k]}</b></td><td>${sel('c_'+k,['한 번','두 번'])}</td><td>${sel('d_'+k,['해당 없음','비슷하다','다르다'])}</td></tr>`).join('');
+ const key={d:['한 번','해당 없음'],s:['두 번','비슷하다'],m:['두 번','다르다']};
+ $('#s8chk').onclick=()=>{let n=0,bl=0;Object.keys(key).forEach(k=>{[0,1].forEach(j=>{const el=$((j?'#d_':'#c_')+k);if(!el.value){bl++;return;}const ok=el.value===key[k][j];el.style.borderColor=ok?'#00704a':'#a8330a';el.style.background=ok?'#e0f5ec':'#fdeadf';if(ok)n++;});});
+  const fb=$('#s8tfb');if(bl){fb.className='fb ng';fb.textContent='빈칸을 모두 선택해 주세요.';return;}fb.className='fb '+(n===6?'ok':'ng');fb.textContent=n===6?'✔ 모두 정답! 이제 ② 유형 분류하기에 도전해 보세요.':`✖ ${n} / 6 정답. 붉은 칸을 그래프에서 다시 확인해 보세요.`;};
+ const cards=[['A','d',0,1],['B','s',2,.9],['C','m',1,1],['D','s',-1.5,1.1],['E','d',-4,.9],['F','m',-2.5,1.1]];
+ DnD($('#s8dnd'),{cards:cards.map(([n,t,p,a])=>({id:n,label:'그래프 '+n,html:`${thumb(TIDE[t](p,a))}<span>그래프 ${n}</span>`})),zones:Object.keys(TN).map(k=>({id:k,label:TN[k]})),answer:Object.fromEntries(cards.map(c=>[c[0],c[1]])),hint:'① 만조가 하루에 몇 번? ② 두 번이라면 두 만조의 높이가 비슷한가요, 다른가요?'});
+ Tabs(['s8t1','s8t2'],[$('#s8p1'),$('#s8p2')]);draw();})();
+
+/* ================= 9. 세계 지도 ================= */
+(()=>{const pj=([lo,la])=>[(lo+170)*2.5,(75-la)*2.5];const poly=pts=>'M'+pts.map(p=>pj(p).map(f1).join(' ')).join('L')+'Z';
+ const land=[
+ [[-168,66],[-156,71],[-140,69.5],[-125,70],[-110,68],[-95,68],[-85,69],[-78,63],[-65,60],[-62,55],[-56,52],[-66,45],[-70,42],[-76,38],[-76,34],[-81,31],[-80,26],[-83,29],[-90,30],[-97,27],[-97,22],[-94,18],[-91,19],[-87,21],[-88,16],[-83,15],[-83,10],[-77,8],[-80,7],[-86,11],[-91,14],[-96,16],[-105,20],[-110,24],[-115,30],[-117,32.5],[-121,35],[-124,40],[-124,47],[-130,55],[-140,60],[-150,61],[-158,57],[-165,60]],
+ [[-73,78],[-60,82],[-30,83],[-18,78],[-20,70],[-40,64],[-50,62],[-56,68],[-68,76]],
+ [[-77,8],[-72,12],[-62,10.5],[-52,5],[-50,0],[-44,-2.5],[-35,-6],[-39,-14],[-41,-22],[-48,-26],[-53,-34],[-58,-38],[-65,-41],[-66,-47],[-68,-52],[-72,-54],[-75,-50],[-73,-40],[-71,-30],[-70,-18],[-76,-14],[-81,-6],[-80,-1],[-78,3]],
+ [[-17,21],[-13,28],[-9,32],[-6,36],[10,37],[11,33],[20,32],[32,31],[34,28],[43,12],[51,12],[51,10],[41,-2],[40,-15],[35,-24],[32,-29],[26,-34],[19,-35],[15,-27],[12,-17],[13,-8],[9,-1],[9,4],[4,6],[-8,4.5],[-13,8],[-17,14]],
+ [[-9,37],[-9,43],[-2,44],[-5,48],[2,51],[5,53],[8,55],[10,57],[8,58],[5,62],[14,68],[26,71],[40,68],[60,70],[80,73],[105,77],[130,72],[160,70],[180,69],[180,65],[172,62],[163,60],[157,51],[150,59],[140,54],[140,48],[131,43],[130,42],[129,35],[126,35],[125,38],[122,40],[121,38],[122,37],[120,34],[122,30],[118,24],[110,21],[108,21.5],[106,19],[109,12],[105,9],[103,10],[100,13],[100,7],[103,2],[101,3],[98,8],[98,16],[94,17],[90,22],[87,21],[80,15],[80,10],[77,8],[73,16],[72,21],[67,24],[57,25],[56,27],[50,30],[48,29],[50,26],[52,24],[56,26],[59,22],[55,17],[45,13],[43,13],[39,21],[35,28],[34,31],[36,35],[28,37],[26,40],[24,38],[22,37],[19,42],[13,45],[18,40],[16,38],[12,42],[8,44],[3,43],[-1,37],[-6,36]],
+ [[-5,50],[1,51],[2,53],[-2,56],[-3,58.5],[-6,58],[-5,54],[-3,53],[-5,52]],
+ [[131,34],[135,35],[140,36],[142,39],[141,41],[139,39],[136,37],[131,35]],
+ [[114,-22],[122,-18],[130,-12],[137,-12],[142,-11],[146,-19],[153,-26],[151,-34],[146,-39],[140,-38],[135,-34],[129,-32],[116,-35],[114,-27]],
+ [[95,5],[106,-6],[104,-6],[95,2]],[[109,1],[117,7],[119,1],[116,-4],[110,-3]],[[44,-25],[47,-25],[50,-15],[49,-12],[44,-17]]];
+ const R=[{n:'한국',full:'우리나라 서해안',lo:126,la:36.5,t:'s',p:2,a:1,dx:-18,dy:6,an:'end'},{n:'멕시코만',full:'멕시코만',lo:-90,la:27,t:'d',p:-2,a:1,dx:18,dy:6,an:'start'},{n:'베트남',full:'베트남 연안',lo:108.5,la:20.5,t:'d',p:3,a:.9,dx:18,dy:8,an:'start'},{n:'영국',full:'영국 근해',lo:-4,la:52.5,t:'s',p:-1,a:1.1,dx:-18,dy:6,an:'end'},{n:'미국 서부',full:'미국 서해안',lo:-124,la:40,t:'m',p:1,a:1,dx:16,dy:-12,an:'start'},{n:'일본',full:'일본 동쪽 해안',lo:142,la:36,t:'m',p:-2,a:1.1,dx:16,dy:8,an:'start'},{n:'서아프리카',full:'서아프리카 연안',lo:-17,la:14,t:'s',p:3,a:.9,dx:-18,dy:6,an:'end'},{n:'알래스카',full:'알래스카 연안',lo:-150,la:60,t:'m',p:-3,a:.9,dx:16,dy:6,an:'start'}];
+ const shape={d:(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}"/>`,s:(x,y,r)=>`<polygon points="${x},${y-r-3} ${x+r+3},${y} ${x},${y+r+3} ${x-r-3},${y}"/>`,m:(x,y,r)=>`<rect x="${x-r}" y="${y-r}" width="${2*r}" height="${2*r}"/>`};
+ const col={d:'#E69F00',s:'#D55E00',m:'#7B2D8E'};
+ let selI=-1,chal=true;const done=new Set(),foundT=new Set(),ans={};
+ function map(){let s=`<rect width="875" height="300" fill="#dff0fa"/>`+land.map(p=>`<path d="${poly(p)}" fill="#c9d8b6" stroke="#7a8d6a" stroke-width="1.5"/>`).join('');
+  R.forEach((r,i)=>{const [x0,y0]=pj([r.lo,r.la]);const x=+x0.toFixed(1),y=+y0.toFixed(1);const rv=done.has(i);
+   s+=`<g role="button" tabindex="0" data-i="${i}" aria-label="${r.full}"><circle class="focus" cx="${x}" cy="${y}" r="26" fill="transparent"/><g fill="${rv?col[r.t]:'#fff'}" stroke="#14212e" stroke-width="3">${shape[rv?r.t:'d'](x,y,11)}</g>${selI===i?`<circle cx="${x}" cy="${y}" r="22" fill="none" stroke="#f0a000" stroke-width="5"/>`:''}<text class="halo" x="${x+r.dx}" y="${y+r.dy}" text-anchor="${r.an}" style="font-size:24px;font-weight:700">${r.n}</text></g>`;});
+  $('#s9map').innerHTML=s;}
+ function graph(){const g=$('#s9g');if(selI<0){g.innerHTML='<text x="220" y="140" text-anchor="middle" style="font-size:20px">지도에서 지역을 눌러 보세요</text>';return;}
+  const r=R[selI],fn=TIDE[r.t](r.p,r.a),Ch=Chart(440,280,{l:60,r:14,t:20,b:46},[0,24],[-1.5,2.4]);
+  g.innerHTML=axesYT(Ch,[-1,0,1,2],'m')+axesXT(Ch,[0,6,12,18,24],v=>v)+`<text x="${Ch.w-14}" y="${Ch.h-4}" text-anchor="end" style="font-size:18px">시각(시)</text><path d="${curve(Ch,fn,0,24,.15)}" fill="none" stroke="#D55E00" stroke-width="5"/>`;}
+ function info(){const fb=$('#s9fb'),a=$('#s9ans');a.innerHTML='';fb.className='fb';fb.textContent='';if(selI<0){$('#s9name').textContent='지역을 선택하세요';return;}
+  const r=R[selI];$('#s9name').textContent=r.full;
+  if(chal&&!done.has(selI)){a.innerHTML=`<p style="margin:4px 0;font-weight:700">그래프를 보고 유형을 골라 보세요.</p><div class="row">${Object.keys(TN).map(k=>`<button class="btn" data-ty="${k}">${TN[k]}</button>`).join('')}</div>`;
+   $$('[data-ty]',a).forEach(b=>b.onclick=()=>{if(b.dataset.ty===r.t){done.add(selI);foundT.add(r.t);fb.className='fb ok';fb.textContent=`✔ 정답! ${TN[r.t]}: ${DEF[r.t]}`;a.innerHTML='';map();found();}else{fb.className='fb ng';fb.textContent='✖ 오답이에요. 하루 동안 만조 횟수와 높이를 다시 세어 보세요.';}});}
+  else{done.add(selI);foundT.add(r.t);fb.className='fb info';fb.innerHTML=`<span class="tag" style="color:${col[r.t]==='#E69F00'?'#8a5a00':col[r.t]}">${TN[r.t]}</span> ${DEF[r.t]}`;map();found();}}
+ function found(){$('#s9found').innerHTML=Object.keys(TN).map(k=>`<span class="chip" aria-pressed="${foundT.has(k)}" style="cursor:default">${TN[k]}</span>`).join('');
+  if(foundT.size===3&&!$('#s9why').firstChild){mini($('#s9why'),{q:'이론적으로는 어디서나 하루 두 번 만조와 간조가 나타나야 하는데, 지역마다 다른 까닭은?',opts:['해양의 형태와 크기, 수심 등 다양한 요소가 다르기 때문','달이 지역마다 다른 크기로 보이기 때문','태양이 지역마다 다르게 비추기 때문'],ans:0,hint:'교과서: 실제로는 해양의 형태·크기·수심 등에 따라 달라져요.',exp:'지역에 따라 만조와 간조의 횟수와 해수면의 높이가 달라져요.'});}}
+ const svg=$('#s9map');const pick=i=>{selI=i;map();graph();info();};
+ svg.addEventListener('click',e=>{const g=e.target.closest('[data-i]');if(g)pick(+g.dataset.i);});
+ svg.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const g=e.target.closest('[data-i]');if(g){e.preventDefault();pick(+g.dataset.i);}}});
+ 
+ map();graph();found();})();
+
+/* ================= 10. 사리와 조금 ================= */
+(()=>{const sl=$('#s10d'),A=$('#s10a'),B=$('#s10b'),range=$('#s10range');const on={m:true,s:true,r:true};const Am=3.1,As=1.55;
+ const alpha=d=>(d-1)*360/29.58;
+ const amp=d=>Math.sqrt(Am*Am+As*As+2*Am*As*Math.cos(2*PI*(d-1)*0.0676));
+ const hf=d=>5.2+Am*Math.cos(2*PI*(d-1)/0.5175)+As*Math.cos(2*PI*(d-1)/0.5);
+ const phaseIcon=(cx,cy,r,al)=>{const p=((al%360)+360)%360,w=p<=180?p:360-p,rx=Math.max(.001,Math.abs(Math.cos(rad(w)))*r),sweep=w<90?0:1;
+  const d=`M${cx} ${cy-r} A${r} ${r} 0 0 1 ${cx} ${cy+r} A${rx} ${r} 0 0 ${sweep} ${cx} ${cy-r}Z`;
+  const mirrored=p>180?`<g transform="translate(${2*cx} 0) scale(-1 1)"><path d="${d}" fill="#fff3c4"/></g>`:`<path d="${d}" fill="#fff3c4"/>`;
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#26364a" stroke="#122233" stroke-width="2"/>${mirrored}`;};
+ const nm=al=>{const a=((al%360)+360)%360;if(Math.min(a,360-a)<12)return '삭';if(Math.abs(a-90)<12)return '상현';if(Math.abs(a-180)<12)return '망';if(Math.abs(a-270)<12)return '하현';return a<90?'삭-상현':a<180?'상현-망':a<270?'망-하현':'하현-삭';};
+ $('#s10lg').innerHTML=`<span><i class="sw" style="background:#0072B2"></i>달의 기조력</span><span><i class="sw" style="background:#E69F00;border-style:dashed"></i>태양의 기조력</span><span><i class="sw" style="background:#14212e"></i>합친 해수면</span>`;
+ const tg=[['m','달 효과'],['s','태양 효과'],['r','합친 결과']];const tw=document.createElement('div');tw.className='row';tw.style.margin='6px 0';tg.forEach(([k,n])=>{const b=document.createElement('button');b.className='btn';b.dataset.k=k;b.textContent=n;b.onclick=()=>{on[k]=!on[k];draw();};tw.appendChild(b);});$('#s10lg').after(tw);
+ function top(d){const al=alpha(d),tm=-rad(al),ts=0,cx=300,cy=285,mx=cx+190*Math.cos(tm),my=cy+190*Math.sin(tm);let s=`<defs><radialGradient id="tidEarth"><stop stop-color="#73c67c"/><stop offset="1" stop-color="#28785e"/></radialGradient></defs><circle cx="${cx}" cy="${cy}" r="190" fill="none" stroke="#a7b5c1" stroke-dasharray="7 8"/><line x1="${cx}" y1="${cy}" x2="676" y2="${cy}" stroke="#8195a4" stroke-dasharray="5 7"/>`;
+  if(on.r)s+=`<path d="${waterPath(cx,cy,108,[{k:20,th:tm},{k:10,th:ts}])}" fill="rgba(86,180,233,.43)" stroke="#14212e" stroke-width="4"/>`;
+  if(on.s)s+=`<path d="${waterPath(cx,cy,108,[{k:10,th:ts}])}" fill="rgba(230,159,0,.22)" stroke="#C77700" stroke-width="4" stroke-dasharray="10 6"/>`;
+  if(on.m)s+=`<path d="${waterPath(cx,cy,108,[{k:20,th:tm}])}" fill="rgba(0,114,178,.20)" stroke="#0072B2" stroke-width="4"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="78" fill="url(#tidEarth)" stroke="#183f4b" stroke-width="3"/><path d="M${cx-47} ${cy-22} Q${cx-22} ${cy-54} ${cx+4} ${cy-35} Q${cx+22} ${cy-18} ${cx+3} ${cy+3} Q${cx-18} ${cy+22} ${cx-40} ${cy+7}Z" fill="#9bd086"/>
+  <circle cx="725" cy="${cy}" r="43" fill="#ffd16a" stroke="#b77a17" stroke-width="3"/><text class="halo" x="725" y="${cy+68}" text-anchor="middle" font-weight="800">태양</text><circle cx="${f1(mx)}" cy="${f1(my)}" r="24" fill="#eef1f4" stroke="#718191" stroke-width="3"/><text class="halo" x="${f1(mx)}" y="${f1(my-31)}" text-anchor="middle" font-weight="800">달</text>
+  <rect x="666" y="18" width="116" height="126" rx="18" fill="#fff" stroke="#bccbd5" stroke-width="2"/>${phaseIcon(724,73,25,al)}<text x="724" y="119" text-anchor="middle" class="halo" style="font-weight:800">${nm(al)}</text><text x="724" y="139" text-anchor="middle" style="font-size:14px;fill:#43556a">달의 위상</text>
+  <text x="300" y="520" text-anchor="middle" class="halo" style="font-weight:700">달의 공전 위치가 바뀌면 두 해수면 모양의 겹침 정도가 달라져요.</text>`;A.innerHTML=s;}
+ function chart(d){const Ch=Chart(820,420,{l:70,r:20,t:84,b:60},[1,30],[0,10.5]);let s=axesYT(Ch,[0,2,4,6,8,10],'높이(m)')+axesXT(Ch,[1,3,5,7,9,11,13,15,17,19,21,23,25,27,29],v=>v)+`<text x="${Ch.w-20}" y="${Ch.h-4}" text-anchor="end" style="font-size:18px">음력(일)</text>`;
+  s+=`<path d="${curve(Ch,hf,1,30,.03)}" fill="none" stroke="#D55E00" stroke-width="3.5"/>`;
+  s+=`<path d="${curve(Ch,x=>5.2+amp(x),1,30,.3)}" fill="none" stroke="#14212e" stroke-width="2.5" stroke-dasharray="7 5"/><path d="${curve(Ch,x=>5.2-amp(x),1,30,.3)}" fill="none" stroke="#14212e" stroke-width="2.5" stroke-dasharray="7 5"/>`;
+  [[1,0,'삭'],[8.4,90,'상현'],[15.8,180,'망'],[23.2,270,'하현'],[30,360,'삭']].forEach(([x,al,n])=>{const X=Ch.X(x);s+=phaseIcon(Math.min(Math.max(X,45),800),30,16,al)+`<text x="${Math.min(Math.max(X,45),795)}" y="68" text-anchor="middle" style="font-size:18px">${n}</text>`;});
+  [[1,'대조'],[15.8,'대조'],[8.4,'소조'],[23.2,'소조']].forEach(([x,n])=>{s+=`<text class="halo" x="${f1(Ch.X(x))}" y="${f1(Ch.Y(5.2+amp(x))-10)}" text-anchor="middle" style="font-weight:800;fill:${n==='대조'?'#7B2D8E':'#0b4f8a'}">${n}</text>`;});s+=`<line x1="${f1(Ch.X(d))}" x2="${f1(Ch.X(d))}" y1="${Ch.m.t}" y2="${Ch.h-Ch.m.b}" stroke="#f0a000" stroke-width="5"/>`;B.innerHTML=s;}
+ function drawRange(d){const span=34+amp(d)*12,hi=116-span/2,lo=116+span/2;range.innerHTML=`<defs><linearGradient id="rsea" x2="0" y2="1"><stop stop-color="#73d4eb"/><stop offset="1" stop-color="#2783b5"/></linearGradient></defs><rect width="520" height="250" rx="14" fill="#effaff"/><path d="M0 82 Q50 78 78 110 Q100 142 126 164 Q153 188 205 196 L205 250 H0Z" fill="#d6bd91" stroke="#9f8058" stroke-width="3"/><path d="M180 ${f1(hi)} H520 V250 H180Z" fill="url(#rsea)"/><line x1="180" y1="${f1(hi)}" x2="492" y2="${f1(hi)}" stroke="#7B2D8E" stroke-width="4" stroke-dasharray="8 6"/><line x1="180" y1="${f1(lo)}" x2="492" y2="${f1(lo)}" stroke="#0072B2" stroke-width="4" stroke-dasharray="8 6"/><text x="196" y="${f1(hi-8)}" class="halo" style="fill:#592468;font-weight:800">만조</text><text x="196" y="${f1(lo+25)}" class="halo" style="fill:#005781;font-weight:800">간조</text>${arrow(435,hi+5,0,lo-hi-10,'#14212e',4,'',14)}${arrow(435,lo-5,0,hi-lo+10,'#14212e',4,'',14)}<text x="462" y="130" class="halo" style="font-weight:800">조차</text><path d="M58 95l-17 28h34zM58 107l-21 34h42zM58 94v48" fill="#47724e"/><text x="78" y="224" class="halo" text-anchor="middle" style="font-weight:800">해안</text><path d="M220 ${f1(hi+12)}q14 -8 28 0t28 0t28 0" fill="none" stroke="#d9f8ff" stroke-width="3"/>`;}
+ function draw(){const d=+sl.value,al=alpha(d),c=Math.cos(2*rad(al));$('#s10dv').textContent=d+'일';$$('#s10lg+div .btn').forEach(b=>b.setAttribute('aria-pressed',on[b.dataset.k]));top(d);chart(d);drawRange(d);const ph=nm(al);$('#s10ph').textContent=ph;const q=c>.8?'대조(사리) 배치':c<-.8?'소조(조금) 배치':'중간 배치';$('#s10am').textContent=q;$('#s10msg').textContent=c>.8?'삭·망 무렵에는 달과 태양의 효과가 같은 방향으로 더해져 조차가 커져요.':c<-.8?'상현·하현 무렵에는 두 효과가 서로 상쇄되어 조차가 작아져요.':'달과 태양의 효과가 일부 더해져 조차가 중간이에요.';}
+ sl.addEventListener('input',draw);$$('[data-d]').forEach(b=>b.onclick=()=>{sl.value=b.dataset.d;draw();});$('#s10prev').onclick=()=>{sl.value=Math.max(1,+sl.value-1);draw();};$('#s10next').onclick=()=>{sl.value=Math.min(30,+sl.value+1);draw();};$('#s10back').onclick=()=>go(9);
+ let playTimer=null;const pb=$('#s10play');function setPlaying(active){if(playTimer){clearInterval(playTimer);playTimer=null;}pb.setAttribute('aria-pressed',active);pb.textContent=active?'⏸ 한 달 변화 일시 정지':'▶ 한 달 변화 재생';if(active)playTimer=setInterval(()=>{sl.value=+sl.value>=30?1:+sl.value+0.05;draw();},35);}pb.onclick=()=>setPlaying(!playTimer);hooks.leave??={};hooks.leave[9]=next=>{if(next!==10)setPlaying(false);};
+ mini($('#s10q1'),{q:'달·지구·태양이 일직선에 놓이면 조차는?',opts:['가장 커진다 (대조·사리)','가장 작아진다 (소조·조금)','변함없다'],ans:0,hint:'파랑과 주황의 불룩한 방향이 같은 쪽일 때를 떠올려 보세요.',exp:'만조 때 해수면이 더 높고 간조 때 더 낮아져 조차가 가장 커요.'});mini($('#s10q2'),{q:'달·지구·태양이 지구 중심에서 직각을 이루면?',opts:['대조(사리)','소조(조금)'],ans:1,hint:'달과 태양의 불룩한 방향이 서로 직각이에요.',exp:'두 효과가 상쇄되어 조차가 가장 작아져요.'});draw();})();
+
+/* ================= 11. 점검 퀴즈 ================= */
+Quiz($('#q11'),[
+ {q:'조석 현상을 일으키는 힘을 무엇이라고 할까요?',opts:['원심력','기조력','만유인력','관성력'],ans:1,hint:'달의 인력과 지구의 원심력의 합력이에요.',exp:'기조력이에요.'},
+ {q:'기조력은 어떤 두 힘의 합력으로 나타날까요?',opts:['달이 지구에 작용하는 인력과 지구의 원심력','태양의 인력과 달의 인력','지구의 자전력과 공전력','달의 인력과 해수의 부력'],ans:0,hint:'슬라이드 3의 파랑·주황 화살표를 떠올려 보세요.',exp:'달의 인력과 공통 질량 중심을 도는 지구의 원심력의 합력이에요.'},
+ {q:'달에서 먼 지표면에서 해수면이 높아지는 까닭은?',opts:['달의 인력이 원심력보다 커서 달 쪽으로 기조력이 작용하므로','원심력이 달의 인력보다 커서 달의 반대쪽으로 기조력이 작용하므로','태양의 인력이 가장 크므로','달의 인력이 작용하지 않으므로'],ans:1,hint:'지점 B에서의 두 힘을 비교해 보세요.',exp:'B에서는 원심력이 더 커요.'},
+ {q:'태양의 기조력은 달 기조력의 약 몇 배일까요?',opts:['약 2,800만 배','약 1/2 배','약 387 배','같다'],ans:1,hint:'T ∝ m/r³ — 질량은 크지만 거리가 훨씬 멀어요.',exp:'태양의 기조력은 달의 약 1/2이에요.'},
+ {q:'만조에서 다음 만조까지의 시간, 조석 주기는 약 얼마일까요?',opts:['약 6시간 12분','약 12시간 25분','약 24시간','약 24시간 50분'],ans:1,hint:'지구 자전 1회(24시간 50분)의 절반이에요.',exp:'약 12시간 25분이에요.'},
+ {q:'하루 동안 조차가 다른 두 번의 만조와 간조가 나타나는 유형은?',opts:['일주조','반일주조','혼합조','대조'],ans:2,hint:'횟수는 두 번, 조차는 "다르다"예요.',exp:'혼합조예요.'},
+ {q:'대조(사리)가 나타나는 달의 위상은?',opts:['삭이나 망 부근','상현이나 하현 부근','항상 보름','달의 위상과 무관하다'],ans:0,hint:'달·지구·태양이 일직선인 때예요.',exp:'대조는 삭이나 망 부근, 소조는 상현이나 하현 부근에서 나타나요.'},
+ {q:'달까지의 거리 r이 3배가 되면 기조력은 처음의 1/( )배가 됩니다.',type:'input',mode:'numeric',unit:'배',ans:['27'],hint:'T ∝ 1/r³ 이므로 3을 세 번 곱해요.',exp:'3³ = 27 이므로 1/27 배예요.'}
+],{onDone:(n,t)=>state.sc.q11=[n,t]});
+
+/* ================= 12. 빈칸·서술 ================= */
+(()=>{const items=[
+ ['조석 현상을 일으키는 힘을 <b>[ ]</b>이라고 한다.',[['기조력']],'네 글자'],
+ ['연속되는 만조와 간조 사이의 해수면 높이 차를 <b>[ ]</b>라고 한다.',[['조차']],'두 글자'],
+ ['만조에서 다음 만조까지의 시간을 <b>[ ]</b>라 하며 약 <b>[ ]</b>시간 <b>[ ]</b>분이다.',[['조석주기','조석 주기'],['12'],['25']],'세 번째 칸은 두 자리 수'],
+ ['하루 동안 한 번의 만조와 간조가 나타나는 것을 <b>[ ]</b>라고 한다.',[['일주조']],'세 글자'],
+ ['하루 동안 조차가 다른 두 번의 만조와 간조가 나타나는 것을 <b>[ ]</b>이라고 한다.',[['혼합조']],'세 글자'],
+ ['달, 지구, 태양이 일직선이면 조차가 가장 커지는데 이를 <b>[ ]</b> 또는 <b>[ ]</b>라고 한다.',[['대조','사리'],['대조','사리']],'한 단어는 사리예요'],
+ ['달, 지구, 태양이 직각을 이루면 조차가 가장 작아지는데 이를 <b>[ ]</b> 또는 <b>[ ]</b>라고 한다.',[['소조','조금'],['소조','조금']],'한 단어는 조금이에요']];
+ const p1=$('#s12p1');const nz=s=>s.replace(/\s/g,'');
+ p1.innerHTML=items.map((it,i)=>{let k=-1;const t=it[0].replace(/\[ \]/g,()=>{k++;return `<input class="txt" style="width:9em;display:inline-block;max-width:9em" data-i="${i}" data-k="${k}" aria-label="${i+1}번 ${k+1}번째 빈칸">`;});return `<p style="margin:10px 0" id="b${i}"><b>${i+1}.</b> ${t} <span class="bdg"></span></p>`;}).join('')+`<div class="qbtns"><button class="btn pri" id="s12chk">정답 확인</button><button class="btn" id="s12h">💡 힌트</button></div><div class="hint" id="s12hint" hidden></div><div class="fb" id="s12fb" role="status" aria-live="polite"></div>`;
+ $('#s12chk').onclick=()=>{let n=0;items.forEach((it,i)=>{const ins=$$(`input[data-i="${i}"]`,p1);const vals=ins.map(x=>nz(x.value));let ok=ins.every((x,k)=>it[1][k].map(nz).includes(vals[k]));if(ok&&it[1].length===2&&it[1][0].length===2&&vals[0]===vals[1])ok=false;
+  ins.forEach(x=>{x.style.borderColor=ok?'#00704a':'#a8330a';x.style.background=ok?'#e0f5ec':'#fdeadf';});$('.bdg',$('#b'+i)).textContent=ok?'✔':'✖';if(ok)n++;});
+  const fb=$('#s12fb');fb.className='fb '+(n===items.length?'ok':'ng');fb.textContent=n===items.length?'✔ 모두 정답!':`${n} / ${items.length} 문장 정답. ✖ 표시된 문장을 다시 확인해 보세요.`;state.sc.fill=[n,items.length];};
+ $('#s12h').onclick=()=>{const h=$('#s12hint');h.hidden=!h.hidden;h.innerHTML=items.map((it,i)=>`${i+1}번: ${it[2]}`).join('<br>');};
+ const p2=$('#s12p2');p2.innerHTML=`<h3>확인 01</h3><p style="font-weight:700">대조(사리)가 나타날 때의 달, 지구, 태양의 상대적 위치는 어떻게 나타나는가?</p><input id="c01" class="txt" aria-label="확인 01 답" placeholder="여기에 써 보세요"><div class="qbtns"><button class="btn pri" id="c01b">정답 확인</button><button class="btn" id="c01h">💡 힌트</button></div><div class="hint" id="c01hint" hidden>슬라이드 10에서 삭·망일 때 세 천체의 배치를 보세요.</div><div class="fb" id="c01fb" role="status" aria-live="polite"></div>`;
+ $('#c01h').onclick=()=>{const h=$('#c01hint');h.hidden=!h.hidden;};
+ $('#c01b').onclick=()=>{const v=nz($('#c01').value),fb=$('#c01fb');const ok=/일직선|한직선|직선/.test(v);fb.className='fb '+(ok?'ok':'ng');fb.textContent=ok?'✔ 정답! 달, 지구, 태양이 일직선에 놓여요.':'✖ 달, 지구, 태양이 어떤 모양으로 놓이는지 다시 생각해 보세요.';};
+ const p3=$('#s12p3');p3.innerHTML=`<h3>바로 알기</h3><p style="font-weight:700">“달의 기조력은 언제나 같은 크기이다.” 이 설명은 맞을까요?</p><div class="row"><button class="btn" data-ox="O">O 맞다</button><button class="btn" data-ox="X">X 틀리다</button></div><div class="fb" id="oxfb" role="status" aria-live="polite"></div><div id="oxwhy" hidden><p style="font-weight:700;margin-bottom:4px">왜냐하면,</p><textarea class="txt" id="oxtxt" rows="3" aria-label="이유 쓰기"></textarea><div class="qbtns"><button class="btn pri" id="oxm">예시 답 보기</button></div><div class="fb info" id="oxmodel" hidden>기조력의 크기는 T ∝ m/r³ 로, 달까지의 거리(r)에 따라 달라져요. 또한 조석은 달뿐 아니라 태양의 기조력도 함께 작용해 달·지구·태양의 위치에 따라 해수면 높이가 달라져요.</div></div>`;
+ $$('[data-ox]',p3).forEach(b=>b.onclick=()=>{const ok=b.dataset.ox==='X',fb=$('#oxfb');fb.className='fb '+(ok?'ok':'ng');fb.textContent=ok?'✔ 정답! 틀린 설명이에요. 이유를 써 보세요.':'✖ 오답이에요. T ∝ m/r³ 를 다시 떠올려 보세요.';$('#oxwhy').hidden=!ok;});
+ $('#oxm').onclick=()=>{$('#oxmodel').hidden=false;};
+ Tabs(['s12t1','s12t2','s12t3'],[p1,p2,p3]);})();
+
+/* ================= 13. 끌어 놓기 ================= */
+(()=>{const cl=[['삭 부근','d'],['망 부근','d'],['상현 부근','s'],['하현 부근','s'],['달·지구·태양이 일직선','d'],['달·지구·태양이 직각','s'],['조차가 가장 크다','d'],['조차가 가장 작다','s']];
+ DnD($('#s13p2'),{cards:[cl[3],cl[6],cl[0],cl[5],cl[2],cl[7],cl[1],cl[4]].map(([t],i)=>({id:t,html:t})),zones:[{id:'d',label:'대조(사리)'},{id:'s',label:'소조(조금)'}],answer:Object.fromEntries(cl.map(c=>[c[0],c[1]])),hint:'달의 기조력과 태양의 기조력이 합쳐지면 대조, 상쇄되면 소조예요.',onCheck:(n,t)=>state.sc.dnd2=[n,t]});
+})();
+
+/* ================= 14. 정리 ================= */
+(()=>{const T=[['조석','해안에서 해수가 주기적으로 수평 이동하면서 해수면의 높이가 높아졌다 낮아지는 현상'],['만조','조석으로 해수면이 가장 높아졌을 때'],['간조','조석으로 해수면이 가장 낮아졌을 때'],['조차','연속되는 만조와 간조 사이에 나타나는 해수면의 높이 차'],['대조(사리)','달, 지구, 태양이 일직선에 놓여 조차가 가장 커지는 때'],['소조(조금)','달, 지구, 태양이 직각을 이루어 달과 태양의 기조력이 상쇄되어 조차가 가장 작아지는 때'],['기조력','조석을 일으키는 힘. 달의 인력과 지구의 원심력의 합력']];
+ $('#s14terms').innerHTML=T.map(([n,d],i)=>`<details class="acc"><summary>${n}</summary><div>${d}<div style="margin-top:8px"><button class="chip" data-t="${i}" aria-pressed="false">알고 있어요</button></div></div></details>`).join('');
+ $$('[data-t]').forEach(b=>b.onclick=()=>{b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true');$('#s14tc').textContent=$$('[data-t][aria-pressed=true]').length+' / '+T.length;});
+ const G=['조석이 발생하는 과정을 설명할 수 있다.','여러 지역의 조석 양상을 자료로 추리할 수 있다.'];
+ $('#s14goals').innerHTML=G.map((g,i)=>`<p style="margin:8px 0 4px;font-weight:700">${g}</p><div class="row" data-g="${i}">${['✔ 할 수 있어요','△ 조금 더 연습','✖ 아직 어려워요'].map((t,k)=>`<button class="btn" aria-pressed="false" data-k="${k}">${t}</button>`).join('')}</div>`).join('');
+ $$('[data-g]').forEach(r=>$$('.btn',r).forEach(b=>b.onclick=()=>{$$('.btn',r).forEach(x=>x.setAttribute('aria-pressed',x===b));}));
+ 
+ $('#s14home').onclick=()=>go(0);
+ hooks[14]=()=>{const S=state.sc,row=(n,v)=>`<div class="ro"><span>${n}</span><b>${v?v[0]+' / '+v[1]+(v[0]===v[1]?' ✔':''):'아직 안 했어요'}</b></div>`;
+  $('#s14sc').innerHTML=row('슬라이드 4 질문',S.q4)+row('슬라이드 11 퀴즈',S.q11)+row('슬라이드 12 빈칸 채우기',S.fill)+row('슬라이드 13 순서 배열',S.dnd1)+row('슬라이드 13 대조/소조 분류',S.dnd2);};})();
+
+hooks[0]=()=>{};
+go(0);
+})();
+</script>
+</body>
+</html>
