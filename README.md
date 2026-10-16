@@ -1,1 +1,0 @@
-# Tidal-Force_lecture
